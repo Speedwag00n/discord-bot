@@ -1,6 +1,7 @@
 package ilia.nemankov.heyheybot.commands;
 
 import ilia.nemankov.heyheybot.commands.impl.Help;
+import ilia.nemankov.heyheybot.commands.impl.Join;
 import ilia.nemankov.heyheybot.commands.impl.Lottery;
 import ilia.nemankov.heyheybot.commands.impl.Roll;
 import ilia.nemankov.heyheybot.settings.SettingsProvider;
@@ -26,6 +27,7 @@ public class CommandManagerMainImpl implements CommandManager {
         addCommand(new Roll(), commandPrefix);
         addCommand(new Lottery(), commandPrefix);
         addCommand(new Help(), commandPrefix);
+        addCommand(new Join(), commandPrefix);
 
         logger.debug("Initialized map of commands");
     }
