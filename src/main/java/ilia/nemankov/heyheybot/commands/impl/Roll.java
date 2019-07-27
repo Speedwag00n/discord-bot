@@ -1,7 +1,7 @@
 package ilia.nemankov.heyheybot.commands.impl;
 
 import ilia.nemankov.heyheybot.commands.Command;
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +22,7 @@ public class Roll implements Command {
     }
 
     @Override
-    public void execute(MessageReceivedEvent event) {
+    public void execute(GuildMessageReceivedEvent event) {
         logger.debug("Started execution of {} command", this.getClass().getSimpleName());
         logger.debug("Received message: {}", event.getMessage().getContentRaw());
 

@@ -4,7 +4,7 @@ import ilia.nemankov.heyheybot.commands.Command;
 import ilia.nemankov.heyheybot.commands.CommandManager;
 import ilia.nemankov.heyheybot.commands.CommandManagerMainImpl;
 import ilia.nemankov.heyheybot.settings.SettingsProvider;
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +29,7 @@ public class Help implements Command {
     }
 
     @Override
-    public void execute(MessageReceivedEvent event) {
+    public void execute(GuildMessageReceivedEvent event) {
         logger.debug("Started execution of {} command", this.getClass().getSimpleName());
         logger.debug("Received message: {}", event.getMessage().getContentRaw());
 

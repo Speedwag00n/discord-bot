@@ -1,7 +1,6 @@
 package ilia.nemankov.heyheybot.commands;
 
-import ilia.nemankov.heyheybot.settings.SettingsProvider;
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,7 @@ public class CommandHandlerImpl extends ListenerAdapter implements CommandHandle
     }
 
     @Override
-    public void onMessageReceived(MessageReceivedEvent event) {
+    public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
         String commandName = event.getMessage().getContentRaw().split(" ")[0].toLowerCase();
         Command command = commands.get(commandName);
         if (command != null) {

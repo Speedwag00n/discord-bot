@@ -1,12 +1,12 @@
 package ilia.nemankov.heyheybot.commands;
 
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 public interface Command {
 
     String getName();
     String[] getDescriptions();
 
-    void execute(MessageReceivedEvent event);
+    void execute(GuildMessageReceivedEvent event);
 
 }
