@@ -31,6 +31,8 @@ public class HeyHeyBot {
             JDA jda = builder.build();
         } catch (LoginException e) {
             logger.error("Can't build JDA", e);
+        } catch (Exception e) {
+            logger.error("Appeared unexpected error", e);
         }
 
     }
