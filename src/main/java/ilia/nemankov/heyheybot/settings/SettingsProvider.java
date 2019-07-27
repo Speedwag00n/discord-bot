@@ -47,4 +47,13 @@ public class SettingsProvider {
         }
     }
 
+    public String getListItemSeparator() {
+        if (!properties.isEmpty()) {
+            return properties.getProperty("command.list.separator");
+        }
+        else {
+            return ":small_orange_diamond:";
+        }
+    }
+
 }

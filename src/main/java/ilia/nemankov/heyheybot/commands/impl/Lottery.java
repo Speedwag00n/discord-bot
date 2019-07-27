@@ -19,8 +19,9 @@ public class Lottery implements Command {
     }
 
     @Override
-    public String getDescription() {
-        return "Choose a random member mentioned in arguments of this command (few mentions of the same user don't affect on results)";
+    public String[] getDescriptions() {
+        return new String[] {"lottery - Choose a random member of current guild",
+            "lottery <@mentions> - Choose a random member mentioned in arguments of this command (few mentions of the same user don't affect on results)"};
     }
 
     @Override

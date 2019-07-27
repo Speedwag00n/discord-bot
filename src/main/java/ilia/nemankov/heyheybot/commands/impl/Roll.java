@@ -17,8 +17,8 @@ public class Roll implements Command {
     }
 
     @Override
-    public String getDescription() {
-        return "Generate a random number from 0 to 100";
+    public String[] getDescriptions() {
+        return new String[] { "roll - Generate a random number from 0 to 100" };
     }
 
     @Override

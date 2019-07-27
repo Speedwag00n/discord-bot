@@ -5,7 +5,7 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 public interface Command {
 
     String getName();
-    String getDescription();
+    String[] getDescriptions();
 
     void execute(MessageReceivedEvent event);
 
