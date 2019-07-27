@@ -1,10 +1,12 @@
 package ilia.nemankov.heyheybot;
 
+import ilia.nemankov.heyheybot.commands.*;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.Map;
 
 import javax.security.auth.login.LoginException;
 
@@ -17,8 +19,14 @@ public class HeyHeyBot {
         final String TOKEN = args[0];
 
         try {
-            JDABuilder builder = new JDABuilder(AccountType.BOT);
-            builder.setToken(TOKEN);
+            CommandManager commandManager = CommandManagerMainImpl.getInstance();
+            Map<String, Command> commands = commandManager.getCommands();
+            CommandHandler commandHandler = CommandHandlerImpl.getInstance();
+            commandHandler.initCommands(commands);
+
+            JDABuilder builder = new JDABuilder(AccountType.BOT)
+                    .setToken(TOKEN)
+                    .addEventListener(commandHandler);
 
             JDA jda = builder.build();
         } catch (LoginException e) {
