@@ -1,5 +1,6 @@
 package ilia.nemankov.heyheybot.commands;
 
+import ilia.nemankov.heyheybot.commands.impl.Lottery;
 import ilia.nemankov.heyheybot.commands.impl.Roll;
 import ilia.nemankov.heyheybot.settings.SettingsProvider;
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ public class CommandManagerMainImpl implements CommandManager {
         String commandPrefix = settings.getCommandPrefix();
         
         addCommand(new Roll(), commandPrefix);
+        addCommand(new Lottery(), commandPrefix);
 
         logger.debug("Initialized map of commands");
     }
