@@ -1,4 +1,4 @@
-package ilia.nemankov.heyheybot.settings;
+package ilia.nemankov.togrofbot.settings;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

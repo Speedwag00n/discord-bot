@@ -1,6 +1,6 @@
-package ilia.nemankov.heyheybot;
+package ilia.nemankov.togrofbot;
 
-import ilia.nemankov.heyheybot.commands.*;
+import ilia.nemankov.togrofbot.commands.*;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;

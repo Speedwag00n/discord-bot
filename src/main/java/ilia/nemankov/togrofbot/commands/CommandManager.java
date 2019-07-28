@@ -1,4 +1,4 @@
-package ilia.nemankov.heyheybot.commands;
+package ilia.nemankov.togrofbot.commands;
 
 import java.util.Map;
 

@@ -1,6 +1,6 @@
-package ilia.nemankov.heyheybot.commands.impl;
+package ilia.nemankov.togrofbot.commands.impl;
 
-import ilia.nemankov.heyheybot.commands.Command;
+import ilia.nemankov.togrofbot.commands.Command;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;

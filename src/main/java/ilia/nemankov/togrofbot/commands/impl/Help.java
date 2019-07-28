@@ -1,9 +1,9 @@
-package ilia.nemankov.heyheybot.commands.impl;
+package ilia.nemankov.togrofbot.commands.impl;
 
-import ilia.nemankov.heyheybot.commands.Command;
-import ilia.nemankov.heyheybot.commands.CommandManager;
-import ilia.nemankov.heyheybot.commands.CommandManagerMainImpl;
-import ilia.nemankov.heyheybot.settings.SettingsProvider;
+import ilia.nemankov.togrofbot.commands.Command;
+import ilia.nemankov.togrofbot.commands.CommandManager;
+import ilia.nemankov.togrofbot.commands.CommandManagerMainImpl;
+import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

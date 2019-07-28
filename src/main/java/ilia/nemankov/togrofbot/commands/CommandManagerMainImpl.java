@@ -1,10 +1,10 @@
-package ilia.nemankov.heyheybot.commands;
+package ilia.nemankov.togrofbot.commands;
 
-import ilia.nemankov.heyheybot.commands.impl.Help;
-import ilia.nemankov.heyheybot.commands.impl.Join;
-import ilia.nemankov.heyheybot.commands.impl.Lottery;
-import ilia.nemankov.heyheybot.commands.impl.Roll;
-import ilia.nemankov.heyheybot.settings.SettingsProvider;
+import ilia.nemankov.togrofbot.commands.impl.Help;
+import ilia.nemankov.togrofbot.commands.impl.Join;
+import ilia.nemankov.togrofbot.commands.impl.Lottery;
+import ilia.nemankov.togrofbot.commands.impl.Roll;
+import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

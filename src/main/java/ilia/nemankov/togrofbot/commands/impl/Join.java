@@ -1,14 +1,12 @@
-package ilia.nemankov.heyheybot.commands.impl;
+package ilia.nemankov.togrofbot.commands.impl;
 
-import ilia.nemankov.heyheybot.commands.Command;
+import ilia.nemankov.togrofbot.commands.Command;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.managers.AudioManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Random;
 
 public class Join implements Command {
 
