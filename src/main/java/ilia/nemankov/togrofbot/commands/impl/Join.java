@@ -1,5 +1,8 @@
 package ilia.nemankov.togrofbot.commands.impl;
 
+import ilia.nemankov.togrofbot.audio.EmotionAudioLoader;
+import ilia.nemankov.togrofbot.audio.GuildMusicManager;
+import ilia.nemankov.togrofbot.audio.GuildMusicManagerProvider;
 import ilia.nemankov.togrofbot.commands.Command;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.VoiceChannel;
@@ -19,7 +22,7 @@ public class Join implements Command {
 
     @Override
     public String[] getDescriptions() {
-        return new String[] { "join - The bot joins your voice channel" };
+        return new String[] { "join - The bot joins your voice channel with a greeting" };
     }
 
     @Override
@@ -38,9 +41,14 @@ public class Join implements Command {
             if (audioManager.isAttemptingToConnect()) {
                 response = "I'm trying to connect now. Please, wait";
             } else {
+                GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
+                GuildMusicManager musicManager = provider.getGuildMusicManager(event.getGuild());
+
                 audioManager.openAudioConnection(channel);
 
-                response = "I'm here!";
+                provider.getPlayerManager().loadItem("src/main/resources/audio/greeting.mp3", new EmotionAudioLoader(musicManager.getTrackScheduler()));
+
+                response = "Hear ye! Hear ye!";
             }
         }
 

@@ -89,6 +89,14 @@
         <appender-ref ref="console"/>
     </logger>
 
+    <logger name="com.sedmelluq.discord.lavaplayer" level="DEBUG" additivity="false">
+        <appender-ref ref="debugLog"/>
+        <appender-ref ref="infoLog"/>
+        <appender-ref ref="errorLog"/>
+        <appender-ref ref="perfLog"/>
+        <appender-ref ref="console"/>
+    </logger>
+
     <root level="INFO">
         <appender-ref ref="debugLog"/>
         <appender-ref ref="infoLog"/>

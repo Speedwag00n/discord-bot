@@ -1,18 +1,19 @@
 package ilia.nemankov.togrofbot;
 
+import ilia.nemankov.togrofbot.audio.GuildMusicManagerProvider;
 import ilia.nemankov.togrofbot.commands.*;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.Map;
 
 import javax.security.auth.login.LoginException;
+import java.util.Map;
 
-public class HeyHeyBot {
+public class TogrofBot {
 
-    private static final Logger logger = LoggerFactory.getLogger(HeyHeyBot.class);
+    private static final Logger logger = LoggerFactory.getLogger(TogrofBot.class);
 
     public static void main(String[] args) {
 
