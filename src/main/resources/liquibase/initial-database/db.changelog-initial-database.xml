@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="init" author="IliaNemankov" runOnChange="true">
+        <sql splitStatements="true">
+            DROP TABLE IF EXISTS "music_link" CASCADE;
+            DROP TABLE IF EXISTS "guild_id_to_music_link" CASCADE;
+        </sql>
+    </changeSet>
+
+    <include file="liquibase/initial-database/create-table/db.changelog.create-table-playlist.xml"/>
+    <include file="liquibase/initial-database/create-table/db.changelog.create-table-music_link.xml"/>
+    <include file="liquibase/initial-database/create-table/db.changelog.create-table-playlist_id_to_music_link.xml"/>
+
+</databaseChangeLog>
