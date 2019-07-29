@@ -14,6 +14,6 @@
 
     <include file="liquibase/initial-database/create-table/db.changelog.create-table-playlist.xml"/>
     <include file="liquibase/initial-database/create-table/db.changelog.create-table-music_link.xml"/>
-    <include file="liquibase/initial-database/create-table/db.changelog.create-table-playlist_id_to_music_link.xml"/>
+    <include file="liquibase/initial-database/create-table/db.changelog.create-table-playlist_to_music_link.xml"/>
 
 </databaseChangeLog>

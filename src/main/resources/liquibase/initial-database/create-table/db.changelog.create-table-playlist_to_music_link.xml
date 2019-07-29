@@ -5,8 +5,8 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
-    <changeSet id="create-playlist_id_to_music_link-table" author="IliaNemankov" runOnChange="true">
-        <createTable tableName="playlist_id_to_music_link">
+    <changeSet id="create-playlist_to_music_link-table" author="IliaNemankov" runOnChange="true">
+        <createTable tableName="playlist_to_music_link">
             <!--Primary keys-->
             <column name="playlist_id" type="BIGINT"/>
             <column name="music_link_id" type="BIGINT"/>
@@ -14,22 +14,22 @@
 
         <addPrimaryKey
                 columnNames="playlist_id, music_link_id"
-                constraintName="primary_key-playlist_id_to_music_link"
-                tableName="playlist_id_to_music_link"/>
+                constraintName="primary_key-playlist_to_music_link"
+                tableName="playlist_to_music_link"/>
 
         <addForeignKeyConstraint
-                baseTableName="playlist_id_to_music_link"
+                baseTableName="playlist_to_music_link"
                 baseColumnNames="playlist_id"
-                constraintName="foreign_key-playlist_id_to_music_link-playlist"
+                constraintName="foreign_key-playlist_to_music_link-playlist"
                 referencedTableName="playlist"
                 referencedColumnNames="playlist_id"
                 onDelete="CASCADE"
                 onUpdate="CASCADE"/>
 
         <addForeignKeyConstraint
-                baseTableName="playlist_id_to_music_link"
+                baseTableName="playlist_to_music_link"
                 baseColumnNames="music_link_id"
-                constraintName="foreign_key-playlist_id_to_music_link-music_link"
+                constraintName="foreign_key-playlist_to_music_link-music_link"
                 referencedTableName="music_link"
                 referencedColumnNames="music_link_id"
                 onDelete="CASCADE"
