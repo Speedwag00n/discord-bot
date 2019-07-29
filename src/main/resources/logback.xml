@@ -97,6 +97,12 @@
         <appender-ref ref="console"/>
     </logger>
 
+    <logger name="org.hibernate" level="DEBUG" additivity="false">
+        <appender-ref ref="debugLog"/>
+        <appender-ref ref="infoLog"/>
+        <appender-ref ref="errorLog"/>
+    </logger>
+
     <root level="INFO">
         <appender-ref ref="debugLog"/>
         <appender-ref ref="infoLog"/>
