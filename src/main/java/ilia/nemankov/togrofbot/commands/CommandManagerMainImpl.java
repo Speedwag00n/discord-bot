@@ -1,9 +1,6 @@
 package ilia.nemankov.togrofbot.commands;
 
-import ilia.nemankov.togrofbot.commands.impl.Help;
-import ilia.nemankov.togrofbot.commands.impl.Join;
-import ilia.nemankov.togrofbot.commands.impl.Lottery;
-import ilia.nemankov.togrofbot.commands.impl.Roll;
+import ilia.nemankov.togrofbot.commands.impl.*;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +25,7 @@ public class CommandManagerMainImpl implements CommandManager {
         addCommand(new Lottery(), commandPrefix);
         addCommand(new Help(), commandPrefix);
         addCommand(new Join(), commandPrefix);
+        addCommand(new PLAdd(), commandPrefix);
 
         logger.debug("Initialized map of commands");
     }
