@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="add-unique-constraint-playlist-table" author="IliaNemankov" runOnChange="true">
+        <addUniqueConstraint
+                tableName="playlist"
+                columnNames="playlist_name, guild_id"
+                constraintName="unique_constraint-playlist-playlist_name_guild_id"
+        />
+
+        <rollback>
+            <dropUniqueConstraint
+                    tableName="playlist"
+                    constraintName="unique_constraint-playlist-playlist_name_guild_id"
+            />
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
