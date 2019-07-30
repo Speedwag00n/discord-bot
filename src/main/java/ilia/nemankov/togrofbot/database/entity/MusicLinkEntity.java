@@ -10,7 +10,7 @@ import java.util.List;
 @Table(name = "music_link")
 @Data
 @NoArgsConstructor
-public class MusicLink {
+public class MusicLinkEntity {
 
     @Id
     @Column(name = "music_link_id")
@@ -24,6 +24,6 @@ public class MusicLink {
     @JoinTable (name="playlist_to_music_link",
             joinColumns=@JoinColumn (name="music_link_id"),
             inverseJoinColumns=@JoinColumn(name="playlist_id"))
-    private List<MusicLink> playlists;
+    private List<MusicLinkEntity> playlists;
 
 }
