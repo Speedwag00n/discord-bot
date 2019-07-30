@@ -27,6 +27,6 @@ public class PlaylistEntity {
     @JoinTable (name="playlist_to_music_link",
             joinColumns=@JoinColumn (name="playlist_id"),
             inverseJoinColumns=@JoinColumn(name="music_link_id"))
-    private List<MusicLink> links;
+    private List<MusicLinkEntity> links;
 
 }
