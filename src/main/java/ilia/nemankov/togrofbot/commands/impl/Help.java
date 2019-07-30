@@ -42,7 +42,7 @@ public class Help implements Command {
         String response;
         try {
             int argument = Integer.parseInt(event.getMessage().getContentRaw().split(" ")[1]);
-            if ((argument > 0) && (commandsDescription.size() / 10 + 1) >= argument) {
+            if ((argument > 0) && (commandsDescription.size() / 10 + ((commandsDescription.size() % 10 == 0) ? 0 : 1)) >= argument) {
                 response = showPage(argument, commandsDescription);
             } else {
                 response = "This page for command " + this.getClass().getSimpleName() + " not found";
@@ -62,7 +62,7 @@ public class Help implements Command {
         SettingsProvider settings = SettingsProvider.getInstance();
 
         StringBuilder responseBuilder = new StringBuilder();
-        responseBuilder.append(pageNumber + " of " + (commandsDescription.size() / 10 + 1) + " page:\n");
+        responseBuilder.append(pageNumber + " of " + (commandsDescription.size() / 10 + ((commandsDescription.size() % 10 == 0) ? 0 : 1)) + " page:\n");
         for (int i = (pageNumber - 1) * 10; i < ((commandsDescription.size() > pageNumber * 10) ? pageNumber * 10 : commandsDescription.size()); i++) {
             responseBuilder.append(settings.getListItemSeparator() + " " +  settings.getCommandPrefix() + commandsDescription.get(i) + "\n");
         }
