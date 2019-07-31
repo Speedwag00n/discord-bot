@@ -18,32 +18,32 @@ import java.util.List;
 public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
-    public void addPlaylist(PlaylistEntity account) {
+    public void addPlaylist(PlaylistEntity entity) {
         Session session = HibernateSessionFactory.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
 
-        session.save(account);
+        session.save(entity);
 
         transaction.commit();
         session.close();
     }
 
     @Override
-    public void removePlaylist(PlaylistEntity account) throws ItemNotPresentedException {
+    public void removePlaylist(PlaylistEntity entity) throws ItemNotPresentedException {
         Session session = HibernateSessionFactory.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
 
         Query query = session.createQuery("FROM PlaylistEntity WHERE name = :paramName and guildId = :paramGuildId");
-        query.setParameter("paramName", account.getName());
-        query.setParameter("paramGuildId", account.getGuildId());
+        query.setParameter("paramName", entity.getName());
+        query.setParameter("paramGuildId", entity.getGuildId());
 
         if (query.getResultList().size() == 0) {
             throw new ItemNotPresentedException();
         }
 
         query = session.createQuery("DELETE PlaylistEntity WHERE name = :paramName and guildId = :paramGuildId");
-        query.setParameter("paramName", account.getName());
-        query.setParameter("paramGuildId", account.getGuildId());
+        query.setParameter("paramName", entity.getName());
+        query.setParameter("paramGuildId", entity.getGuildId());
 
         query.executeUpdate();
 
@@ -52,11 +52,11 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Override
-    public void updatePlaylist(PlaylistEntity account) {
+    public void updatePlaylist(PlaylistEntity entity) {
         Session session = HibernateSessionFactory.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
 
-        session.update(account);
+        session.update(entity);
 
         transaction.commit();
         session.close();
