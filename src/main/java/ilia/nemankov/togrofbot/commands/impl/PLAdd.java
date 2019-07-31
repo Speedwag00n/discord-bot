@@ -30,7 +30,7 @@ public class PLAdd implements Command {
 
         String response;
         try {
-            String argument = event.getMessage().getContentRaw().split(" ")[1];
+            String argument = event.getMessage().getContentRaw().split("\\s+")[1];
 
             PlaylistEntity entity = new PlaylistEntity();
             entity.setName(argument);

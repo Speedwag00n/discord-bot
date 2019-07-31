@@ -38,7 +38,7 @@ public class Playlists implements Command {
         List<String> playlists = entities.parallelStream().map(entity -> entity.getName()).collect(Collectors.toList());
         String response;
         try {
-            int page = Integer.parseInt(event.getMessage().getContentRaw().split(" ")[2]);
+            int page = Integer.parseInt(event.getMessage().getContentRaw().split("\\s+")[2]);
             if ((page > 0) && (playlists.size() / 10 + ((playlists.size() % 10 == 0) ? 0 : 1)) >= page) {
                 response = showPage(page, playlists);
             } else {

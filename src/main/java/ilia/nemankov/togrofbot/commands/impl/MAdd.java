@@ -40,12 +40,12 @@ public class MAdd implements Command {
             String link = null;
 
             try {
-                playlist = event.getMessage().getContentRaw().split(" ")[1];
+                playlist = event.getMessage().getContentRaw().split("\\s+")[1];
             } catch (IndexOutOfBoundsException e) {
                 response = "Name of playlist must be presented";
             }
             try {
-                link = event.getMessage().getContentRaw().split(" ")[2];
+                link = event.getMessage().getContentRaw().split("\\s+")[2];
             } catch (IndexOutOfBoundsException e) {
                 response = "Track link must be presented";
             }

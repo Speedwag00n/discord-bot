@@ -41,7 +41,7 @@ public class Help implements Command {
         }
         String response;
         try {
-            int argument = Integer.parseInt(event.getMessage().getContentRaw().split(" ")[1]);
+            int argument = Integer.parseInt(event.getMessage().getContentRaw().split("\\s+")[1]);
             if ((argument > 0) && (commandsDescription.size() / 10 + ((commandsDescription.size() % 10 == 0) ? 0 : 1)) >= argument) {
                 response = showPage(argument, commandsDescription);
             } else {
