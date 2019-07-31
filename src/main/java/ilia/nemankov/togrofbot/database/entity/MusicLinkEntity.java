@@ -15,13 +15,10 @@ public class MusicLinkEntity implements Serializable {
     private static final long serialVersionUID = 1318950329814538445L;
 
     @Id
-    @Column(name = "playlist_id")
-    private long playlistId;
-
-    @Id
     @Column(name = "link")
     private String link;
 
+    @Id
     @ManyToOne (optional=false, cascade=CascadeType.ALL)
     @JoinColumn (name="playlist_id")
     private PlaylistEntity playlist;

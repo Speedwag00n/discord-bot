@@ -36,7 +36,7 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
         //TODO check exists ot not
 
         Query query = session.createQuery("DELETE PlaylistEntity WHERE name = :paramName and guildId = :paramGuildId");
-        query.setParameter("paramName", entity.getPlaylistId());
+        query.setParameter("paramName", entity.getPlaylist().getId());
         query.setParameter("paramGuildId", entity.getLink());
 
         query.executeUpdate();
