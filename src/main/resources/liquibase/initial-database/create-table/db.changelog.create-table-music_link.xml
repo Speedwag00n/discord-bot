@@ -7,13 +7,28 @@
 
     <changeSet id="create-music_link-table" author="IliaNemankov" runOnChange="true">
         <createTable tableName="music_link">
-            <column autoIncrement="true" name="music_link_id" type="BIGINT">
-                <constraints primaryKey="true" nullable="false"/>
+            <column name="playlist_id" type="BIGINT">
+                <constraints nullable="false"/>
             </column>
             <column name="link" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
+
+        <addPrimaryKey
+                columnNames="playlist_id, link"
+                constraintName="primary_key-music_link"
+                tableName="music_link"
+        />
+
+        <addForeignKeyConstraint
+                baseTableName="music_link"
+                baseColumnNames="playlist_id"
+                constraintName="foreign_key-music_link-playlist"
+                referencedTableName="playlist"
+                referencedColumnNames="playlist_id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
     </changeSet>
 
 </databaseChangeLog>

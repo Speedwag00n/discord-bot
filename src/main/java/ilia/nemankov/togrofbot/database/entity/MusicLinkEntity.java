@@ -4,26 +4,26 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.List;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "music_link")
 @Data
 @NoArgsConstructor
-public class MusicLinkEntity {
+public class MusicLinkEntity implements Serializable {
+
+    private static final long serialVersionUID = 1318950329814538445L;
 
     @Id
-    @Column(name = "music_link_id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @Column(name = "playlist_id")
+    private long playlistId;
 
+    @Id
     @Column(name = "link")
     private String link;
 
-    @ManyToMany
-    @JoinTable (name="playlist_to_music_link",
-            joinColumns=@JoinColumn (name="music_link_id"),
-            inverseJoinColumns=@JoinColumn(name="playlist_id"))
-    private List<MusicLinkEntity> playlists;
+    @ManyToOne (optional=false, cascade=CascadeType.ALL)
+    @JoinColumn (name="playlist_id")
+    private PlaylistEntity playlist;
 
 }

@@ -2,7 +2,6 @@ package ilia.nemankov.togrofbot.util;
 
 import ilia.nemankov.togrofbot.database.entity.MusicLinkEntity;
 import ilia.nemankov.togrofbot.database.entity.PlaylistEntity;
-import ilia.nemankov.togrofbot.database.entity.PlaylistToMusicLink;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
@@ -26,7 +25,6 @@ public class HibernateSessionFactory {
 
                 configuration.addAnnotatedClass(PlaylistEntity.class);
                 configuration.addAnnotatedClass(MusicLinkEntity.class);
-                configuration.addAnnotatedClass(PlaylistToMusicLink.class);
 
                 StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties());
                 instance = configuration.buildSessionFactory(builder.build());

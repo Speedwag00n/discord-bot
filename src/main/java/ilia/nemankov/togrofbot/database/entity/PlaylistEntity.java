@@ -23,10 +23,7 @@ public class PlaylistEntity {
     @Column(name = "guild_id")
     private long guildId;
 
-    @ManyToMany
-    @JoinTable (name="playlist_to_music_link",
-            joinColumns=@JoinColumn (name="playlist_id"),
-            inverseJoinColumns=@JoinColumn(name="music_link_id"))
+    @OneToMany (mappedBy="playlist", fetch=FetchType.LAZY)
     private List<MusicLinkEntity> links;
 
 }
