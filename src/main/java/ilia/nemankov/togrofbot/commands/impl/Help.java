@@ -34,9 +34,9 @@ public class Help implements Command {
         logger.debug("Received message: {}", event.getMessage().getContentRaw());
 
         CommandManager commandManager = CommandManagerMainImpl.getInstance();
-        Map<String, Command> commands = commandManager.getCommands();
+        List<Command> commands = commandManager.getOrderedCommands();
         List<String> commandsDescription = new ArrayList<>();
-        for (Command command : commands.values()) {
+        for (Command command : commands) {
             commandsDescription.addAll(Arrays.asList(command.getDescriptions()));
         }
         String response;

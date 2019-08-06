@@ -5,7 +5,9 @@ import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CommandManagerMainImpl implements CommandManager {
@@ -15,9 +17,11 @@ public class CommandManagerMainImpl implements CommandManager {
     private static CommandManagerMainImpl instance;
 
     private Map<String, Command> commands;
+    private List<Command> orderedCommands;
 
     private CommandManagerMainImpl() {
         commands = new HashMap<>();
+        orderedCommands = new ArrayList<>();
         SettingsProvider settings = SettingsProvider.getInstance();
         String commandPrefix = settings.getCommandPrefix();
         
@@ -47,8 +51,14 @@ public class CommandManagerMainImpl implements CommandManager {
         return commands;
     }
 
+    @Override
+    public List<Command> getOrderedCommands() {
+        return orderedCommands;
+    }
+
     private void addCommand(Command command, String commandPrefix) {
         commands.put(commandPrefix + command.getName(), command);
+        orderedCommands.add(command);
     }
 
 }
