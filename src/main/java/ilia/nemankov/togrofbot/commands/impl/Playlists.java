@@ -39,7 +39,10 @@ public class Playlists implements Command {
         String response;
         try {
             int page = Integer.parseInt(event.getMessage().getContentRaw().split("\\s+")[2]);
-            if ((page > 0) && (playlists.size() / 10 + ((playlists.size() % 10 == 0) ? 0 : 1)) >= page) {
+            System.out.println(playlists.size());
+            if (playlists.isEmpty()) {
+                response = "There isn't any playlist";
+            } else if ((page > 0) && (playlists.size() / 10 + ((playlists.size() % 10 == 0) ? 0 : 1)) >= page) {
                 response = showPage(page, playlists);
             } else {
                 response = "This page for command " + this.getClass().getSimpleName() + " not found";
@@ -47,7 +50,11 @@ public class Playlists implements Command {
         } catch (NumberFormatException e) {
             response = "Argument must be a number";
         } catch (ArrayIndexOutOfBoundsException e) {
-            response = showPage(1, playlists);
+            if (playlists.isEmpty()) {
+                response = "There isn't any playlist";
+            } else {
+                response = showPage(1, playlists);
+            }
         }
         logger.debug("Generated response for command {}: \"{}\"", this.getClass().getSimpleName(), response);
         event.getChannel().sendMessage(response).queue();
