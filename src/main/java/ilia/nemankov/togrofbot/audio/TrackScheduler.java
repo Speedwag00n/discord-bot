@@ -51,6 +51,11 @@ public class TrackScheduler extends AudioEventAdapter {
         }
     }
 
+    public void crearAll() {
+        queue.clear();
+        logger.debug("Track scheduler queue cleared");
+    }
+
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
         if (endReason.mayStartNext) {
