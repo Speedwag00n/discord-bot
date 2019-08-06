@@ -51,7 +51,7 @@ public class TrackScheduler extends AudioEventAdapter {
         }
     }
 
-    public void crearAll() {
+    public void clearAll() {
         queue.clear();
         logger.debug("Track scheduler queue cleared");
     }

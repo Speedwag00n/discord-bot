@@ -34,6 +34,7 @@ public class CommandManagerMainImpl implements CommandManager {
         addCommand(new Playlists(), commandPrefix);
         addCommand(new MAdd(), commandPrefix);
         addCommand(new PLPlay(), commandPrefix);
+        addCommand(new Skip(), commandPrefix);
 
         logger.debug("Initialized map of commands");
     }

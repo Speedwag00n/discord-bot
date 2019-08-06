@@ -69,7 +69,7 @@ public class PLPlay implements Command {
                         GuildMusicManager musicManager = provider.getGuildMusicManager(event.getGuild());
 
                         musicManager.getAudioPlayer().stopTrack();
-                        musicManager.getTrackScheduler().crearAll();
+                        musicManager.getTrackScheduler().clearAll();
 
                         audioManager.openAudioConnection(channel);
 
