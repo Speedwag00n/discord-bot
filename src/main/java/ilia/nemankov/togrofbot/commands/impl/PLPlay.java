@@ -51,38 +51,37 @@ public class PLPlay implements Command {
             PlaylistRepository repository = new PlaylistRepositoryImpl();
             List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
 
-            List<String> links = null;
             if (entities.isEmpty()) {
                 response = "Playlist with specified name not found";
             } else {
-                links = entities.get(0).getLinks().parallelStream().map(entity -> entity.getLink()).collect(Collectors.toList());
-            }
+                List<String> links = entities.get(0).getLinks().parallelStream().map(entity -> entity.getLink()).collect(Collectors.toList());
 
-            if ((links != null) && (channel == null)) {
-                response = "You aren't connected to any voice channel. Please, select one";
-            } else if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.VOICE_CONNECT)) {
-                response = "I don't have enough permissions to connect to this voice channel";
-            } else {
-                AudioManager audioManager = event.getGuild().getAudioManager();
-                if (audioManager.isAttemptingToConnect()) {
-                    response = "I'm trying to connect now. Please, wait";
+                if (channel == null) {
+                    response = "You aren't connected to any voice channel. Please, select one";
+                } else if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.VOICE_CONNECT)) {
+                    response = "I don't have enough permissions to connect to this voice channel";
                 } else {
-                    GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
-                    GuildMusicManager musicManager = provider.getGuildMusicManager(event.getGuild());
+                    AudioManager audioManager = event.getGuild().getAudioManager();
+                    if (audioManager.isAttemptingToConnect()) {
+                        response = "I'm trying to connect now. Please, wait";
+                    } else {
+                        GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
+                        GuildMusicManager musicManager = provider.getGuildMusicManager(event.getGuild());
 
-                    musicManager.getAudioPlayer().stopTrack();
-                    musicManager.getTrackScheduler().crearAll();
+                        musicManager.getAudioPlayer().stopTrack();
+                        musicManager.getTrackScheduler().crearAll();
 
-                    audioManager.openAudioConnection(channel);
+                        audioManager.openAudioConnection(channel);
 
-                    AudioLoadResultHandler audioLoader = new MusicAudioLoader(musicManager.getTrackScheduler());
+                        AudioLoadResultHandler audioLoader = new MusicAudioLoader(musicManager.getTrackScheduler());
 
-                    for (String link : links) {
-                        System.out.println(link);
-                        provider.getPlayerManager().loadItem(link, audioLoader);
+                        for (String link : links) {
+                            System.out.println(link);
+                            provider.getPlayerManager().loadItem(link, audioLoader);
+                        }
+
+                        response = "Started play tracks from playlist " + playlist;
                     }
-
-                    response = "Started play tracks from playlist " + playlist;
                 }
             }
         } catch (ArrayIndexOutOfBoundsException e) {
