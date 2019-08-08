@@ -8,6 +8,8 @@ import ilia.nemankov.togrofbot.database.repository.PlaylistRepository;
 import ilia.nemankov.togrofbot.database.repository.impl.MusicLinkRepositoryImpl;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByNameAndGuildId;
+import ilia.nemankov.togrofbot.util.LinkUtils;
+import ilia.nemankov.togrofbot.util.VideoInfo;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
@@ -51,20 +53,27 @@ public class MAdd implements Command {
             }
 
             if (playlist != null && link != null) {
-                PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
-                List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
+                VideoInfo videoInfo = LinkUtils.parseLink(link);
+                if (videoInfo != null) {
+                    PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
+                    List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
 
-                if (!playlistEntities.isEmpty()) {
-                    MusicLinkEntity entity = new MusicLinkEntity();
-                    entity.setPlaylist(playlistEntities.get(0));
-                    entity.setLink(link);
+                    if (!playlistEntities.isEmpty()) {
+                        MusicLinkEntity entity = new MusicLinkEntity();
+                        entity.setPlaylist(playlistEntities.get(0));
+                        entity.setIdentifier(videoInfo.getIdentifier());
+                        entity.setSource(videoInfo.getSource());
+                        entity.setTitle(videoInfo.getTitle());
 
-                    MusicLinkRepository musicLinkRepository = new MusicLinkRepositoryImpl();
-                    musicLinkRepository.addMusicLink(entity);
+                        MusicLinkRepository musicLinkRepository = new MusicLinkRepositoryImpl();
+                        musicLinkRepository.addMusicLink(entity);
 
-                    response = "Added new track to a \"" + playlist + "\" playlist";
+                        response = "Added new track to a \"" + playlist + "\" playlist";
+                    } else {
+                        response = "Specified playlist not found";
+                    }
                 } else {
-                    response = "Specified playlist not found";
+                    response = "Can't load track by specified link";
                 }
             }
         } catch (IndexOutOfBoundsException e) {
