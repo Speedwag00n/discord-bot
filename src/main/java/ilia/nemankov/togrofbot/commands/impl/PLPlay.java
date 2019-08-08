@@ -1,18 +1,18 @@
 package ilia.nemankov.togrofbot.commands.impl;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
-import ilia.nemankov.togrofbot.audio.EmotionAudioLoader;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import ilia.nemankov.togrofbot.audio.GuildMusicManager;
 import ilia.nemankov.togrofbot.audio.GuildMusicManagerProvider;
 import ilia.nemankov.togrofbot.audio.MusicAudioLoader;
 import ilia.nemankov.togrofbot.commands.Command;
 import ilia.nemankov.togrofbot.database.entity.MusicLinkEntity;
 import ilia.nemankov.togrofbot.database.entity.PlaylistEntity;
-import ilia.nemankov.togrofbot.database.repository.MusicLinkRepository;
+import ilia.nemankov.togrofbot.database.entity.VideoInfo;
 import ilia.nemankov.togrofbot.database.repository.PlaylistRepository;
-import ilia.nemankov.togrofbot.database.repository.impl.MusicLinkRepositoryImpl;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByNameAndGuildId;
+import ilia.nemankov.togrofbot.util.LinkUtils;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class PLPlay implements Command {
 
@@ -49,12 +48,12 @@ public class PLPlay implements Command {
             String playlist = event.getMessage().getContentRaw().split("\\s+")[1];
 
             PlaylistRepository repository = new PlaylistRepositoryImpl();
-            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
+            List<PlaylistEntity> playlistEntities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
 
-            if (entities.isEmpty()) {
+            if (playlistEntities.isEmpty()) {
                 response = "Playlist with specified name not found";
             } else {
-                List<String> links = entities.get(0).getLinks().parallelStream().map(entity -> entity.getLink()).collect(Collectors.toList());
+                List<MusicLinkEntity> musicLinkEntities = playlistEntities.get(0).getLinks();
 
                 if (channel == null) {
                     response = "You aren't connected to any voice channel. Please, select one";
@@ -75,8 +74,12 @@ public class PLPlay implements Command {
 
                         AudioLoadResultHandler audioLoader = new MusicAudioLoader(musicManager.getTrackScheduler());
 
-                        for (String link : links) {
-                            provider.getPlayerManager().loadItem(link, audioLoader);
+                        for (MusicLinkEntity musicLinkEntity : musicLinkEntities) {
+                            VideoInfo info = new VideoInfo(musicLinkEntity.getIdentifier(), musicLinkEntity.getSource(), musicLinkEntity.getTitle());
+                            AudioTrack track;
+                            if ((track = LinkUtils.buildAudioTrack(info)) != null) {
+                                audioLoader.trackLoaded(track);
+                            }
                         }
 
                         response = "Started play tracks from playlist " + playlist;

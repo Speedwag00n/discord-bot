@@ -1,4 +1,4 @@
-package ilia.nemankov.togrofbot.util;
+package ilia.nemankov.togrofbot.database.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

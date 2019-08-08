@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioItem;
 import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import ilia.nemankov.togrofbot.audio.GuildMusicManagerProvider;
+import ilia.nemankov.togrofbot.database.entity.VideoInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,35 @@ public class LinkUtils {
                 logger.debug("Can't find video in source {}", sourceManager.getSourceName());
             }
         }
+        logger.debug("Video for link {} not found", link);
         return null;
+    }
+
+    public static AudioTrack buildAudioTrack(VideoInfo videoInfo) {
+        String source = videoInfo.getSource();
+        AudioItem item;
+        switch (source) {
+            case "youtube":
+                YoutubeAudioSourceManager youtubeAudioSourceManager = new YoutubeAudioSourceManager();
+                item = youtubeAudioSourceManager.loadTrackWithVideoId(videoInfo.getIdentifier(), false);
+                break;
+            case "vimeo":
+                VimeoAudioSourceManager vimeoAudioSourceManager = new VimeoAudioSourceManager();
+                GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
+                item = vimeoAudioSourceManager.loadItem((DefaultAudioPlayerManager)provider.getPlayerManager(),
+                        new AudioReference(videoInfo.getIdentifier(), null));
+                break;
+                default:
+                    logger.warn("Unknown source for video");
+                    return null;
+        }
+        if (item != null && item instanceof AudioTrack) {
+            logger.debug("AudioTrack object built");
+            return (AudioTrack)item;
+        } else {
+            logger.debug("Could not build AudioTrack object");
+            return null;
+        }
     }
 
 }

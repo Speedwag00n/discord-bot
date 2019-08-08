@@ -1,11 +1,5 @@
 package ilia.nemankov.togrofbot.commands.impl;
 
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioTrack;
-import com.sedmelluq.discord.lavaplayer.track.AudioItem;
-import com.sedmelluq.discord.lavaplayer.track.AudioReference;
-import ilia.nemankov.togrofbot.audio.GuildMusicManagerProvider;
 import ilia.nemankov.togrofbot.commands.Command;
 import ilia.nemankov.togrofbot.database.entity.PlaylistEntity;
 import ilia.nemankov.togrofbot.database.repository.PlaylistRepository;
@@ -15,7 +9,6 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,24 +42,24 @@ public class Music implements Command {
             if (entities.isEmpty()) {
                 response = "Playlist with specified name not found";
             } else {
-                List<String> links = entities.get(0).getLinks().parallelStream().map(entity -> entity.getLink()).collect(Collectors.toList());
+                List<String> titles = entities.get(0).getLinks().parallelStream().map(entity -> entity.getTitle()).collect(Collectors.toList());
 
                 try {
                     int page = Integer.parseInt(event.getMessage().getContentRaw().split("\\s+")[2]);
-                    if (links.isEmpty()) {
+                    if (titles.isEmpty()) {
                         response = "There isn't any track in playlist \"" + playlist + "\"";
-                    } else if ((page > 0) && (links.size() / 10 + ((links.size() % 10 == 0) ? 0 : 1)) >= page) {
-                        response = showPage(page, links);
+                    } else if ((page > 0) && (titles.size() / 10 + ((titles.size() % 10 == 0) ? 0 : 1)) >= page) {
+                        response = showPage(page, titles);
                     } else {
                         response = "This page for command " + this.getClass().getSimpleName() + " not found";
                     }
                 } catch (NumberFormatException e) {
                     response = "Argument must be a number";
                 } catch (ArrayIndexOutOfBoundsException e) {
-                    if (links.isEmpty()) {
+                    if (titles.isEmpty()) {
                         response = "There isn't any track in playlist \"" + playlist + "\"";
                     } else {
-                        response = showPage(1, links);
+                        response = showPage(1, titles);
                     }
                 }
             }
@@ -80,17 +73,12 @@ public class Music implements Command {
         logger.debug("Finished execution of {} command", this.getClass().getSimpleName());
     }
 
-    private String showPage(int pageNumber, List<String> tracks) {
+    private String showPage(int pageNumber, List<String> titles) {
         StringBuilder responseBuilder = new StringBuilder();
 
-        YoutubeAudioSourceManager sourceManager = new YoutubeAudioSourceManager();
-        GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
-        responseBuilder.append(pageNumber + " of " + (tracks.size() / 10 + ((tracks.size() % 10 == 0) ? 0 : 1)) + " page:\n");
-        for (int i = (pageNumber - 1) * 10; i < ((tracks.size() > pageNumber * 10) ? pageNumber * 10 : tracks.size()); i++) {
-            AudioItem item = sourceManager.loadItem((DefaultAudioPlayerManager) provider.getPlayerManager(), new AudioReference(tracks.get(i), null));
-            YoutubeAudioTrack track = (YoutubeAudioTrack)item;
-
-            responseBuilder.append((i + 1) + ") " + track.getInfo().title + "\n");
+        responseBuilder.append(pageNumber + " of " + (titles.size() / 10 + ((titles.size() % 10 == 0) ? 0 : 1)) + " page:\n");
+        for (int i = (pageNumber - 1) * 10; i < ((titles.size() > pageNumber * 10) ? pageNumber * 10 : titles.size()); i++) {
+            responseBuilder.append((i + 1) + ") " + titles.get(i) + "\n");
         }
         return responseBuilder.toString();
     }

@@ -9,7 +9,7 @@ import ilia.nemankov.togrofbot.database.repository.impl.MusicLinkRepositoryImpl;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByNameAndGuildId;
 import ilia.nemankov.togrofbot.util.LinkUtils;
-import ilia.nemankov.togrofbot.util.VideoInfo;
+import ilia.nemankov.togrofbot.database.entity.VideoInfo;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
