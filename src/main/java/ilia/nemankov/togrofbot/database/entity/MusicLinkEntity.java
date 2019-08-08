@@ -23,4 +23,7 @@ public class MusicLinkEntity implements Serializable {
     @JoinColumn (name="playlist_id")
     private PlaylistEntity playlist;
 
+    @Column(name = "title")
+    private String title;
+
 }
