@@ -7,4 +7,7 @@
 
     <include file="liquibase/initial-database/db.changelog-initial-database.xml"/>
 
+    <include file="liquibase/changes/2019-08-08/db.changelog.2019-08-08-1.change-music_link-table.xml"/>
+    <include file="liquibase/changes/2019-08-08/db.changelog.2019-08-08-2.change-music_link-table.xml"/>
+
 </databaseChangeLog>
