@@ -76,7 +76,6 @@ public class PLPlay implements Command {
                         AudioLoadResultHandler audioLoader = new MusicAudioLoader(musicManager.getTrackScheduler());
 
                         for (String link : links) {
-                            System.out.println(link);
                             provider.getPlayerManager().loadItem(link, audioLoader);
                         }
 

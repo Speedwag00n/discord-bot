@@ -41,7 +41,7 @@ public class CommandHandlerImpl extends ListenerAdapter implements CommandHandle
             try {
                 command.execute(event);
             } catch (Exception e) {
-                logger.error("Failed to execute {} command", commandName);
+                logger.error("Failed to execute {} command", commandName, e);
             }
         }
     }
