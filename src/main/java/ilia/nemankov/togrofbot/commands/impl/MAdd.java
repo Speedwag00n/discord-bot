@@ -68,7 +68,7 @@ public class MAdd implements Command {
                         MusicLinkRepository musicLinkRepository = new MusicLinkRepositoryImpl();
                         musicLinkRepository.addMusicLink(entity);
 
-                        response = "Added new track to a \"" + playlist + "\" playlist";
+                        response = "Added \"" + videoInfo.getTitle() + "\" to \"" + playlist + "\" playlist";
                     } else {
                         response = "Specified playlist not found";
                     }
