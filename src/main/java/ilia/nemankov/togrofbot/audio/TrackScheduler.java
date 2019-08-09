@@ -19,6 +19,7 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
     private final BlockingQueue<AudioTrack> queue;
     private AudioTrack playingNow;
     private TextChannel communicationChannel;
+    private String playlist;
 
     public TrackScheduler(AudioPlayer player) {
         this.player = player;
@@ -58,6 +59,7 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
         else {
             playingNow = null;
             communicationChannel = null;
+            playlist = null;
             logger.debug("Nothing to play");
         }
     }
@@ -98,6 +100,14 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
             logger.debug("Ended a track \"{}\". Starting next", track.getIdentifier());
             next();
         }
+    }
+
+    public String getPlaylist() {
+        return playlist;
+    }
+
+    public void setPlaylist(String playlist) {
+        this.playlist = playlist;
     }
 
 }

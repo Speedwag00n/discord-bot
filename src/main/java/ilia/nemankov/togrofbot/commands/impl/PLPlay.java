@@ -73,6 +73,7 @@ public class PLPlay implements Command {
                         audioManager.openAudioConnection(channel);
 
                         AudioLoadResultHandler audioLoader = new MusicAudioLoader(musicManager.getTrackScheduler());
+                        musicManager.getTrackScheduler().setPlaylist(playlist);
 
                         musicManager.getTrackScheduler().setCommunicationChannel(event.getChannel());
                         for (MusicLinkEntity musicLinkEntity : musicLinkEntities) {
