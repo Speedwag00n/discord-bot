@@ -26,7 +26,7 @@ public class TrackScheduler extends AudioEventAdapter {
     public void queue(AudioTrack track) {
         if (!player.startTrack(track, true)) {
             queue.offer(track);
-            logger.debug("Added a track \"{}\" to the queue", track.getIdentifier());
+            logger.debug("Added a track with identifier \"{}\" to the queue", track.getIdentifier());
         } else {
             //Track started playing because the queue was empty
             playingNow = track;

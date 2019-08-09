@@ -20,7 +20,7 @@ public class MusicAudioLoader implements AudioLoadResultHandler {
     @Override
     public void trackLoaded(AudioTrack track) {
         trackScheduler.queue(track);
-        logger.debug("Started playing track \"{}\"", track.getIdentifier());
+        logger.debug("Loaded \"{}\"", track.getIdentifier());
     }
 
     @Override
