@@ -11,16 +11,16 @@ public class EmotionAudioLoader implements AudioLoadResultHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(EmotionAudioLoader.class);
 
-    private TrackScheduler trackScheduler;
+    private Scheduler scheduler;
 
-    public EmotionAudioLoader(TrackScheduler trackScheduler) {
-        this.trackScheduler = trackScheduler;
+    public EmotionAudioLoader(Scheduler scheduler) {
+        this.scheduler = scheduler;
     }
 
     @Override
     public void trackLoaded(AudioTrack track) {
-        if (trackScheduler.isEmpty() && (trackScheduler.getPlayingNow() == null)) {
-            trackScheduler.queue(track);
+        if (scheduler.isEmpty() && (scheduler.getPlayingNow() == null)) {
+            scheduler.queue(track);
             logger.debug("Started playing emotion \"{}\"", track.getIdentifier());
         } else {
             logger.debug("Scheduler queue isn't empty, could not play emotion \"{}\"", track.getIdentifier());
@@ -30,7 +30,7 @@ public class EmotionAudioLoader implements AudioLoadResultHandler {
     @Override
     public void playlistLoaded(AudioPlaylist playlist) {
         for (AudioTrack track : playlist.getTracks()) {
-            trackScheduler.queue(track);
+            scheduler.queue(track);
         }
     }
 

@@ -11,22 +11,22 @@ public class MusicAudioLoader implements AudioLoadResultHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(MusicAudioLoader.class);
 
-    private TrackScheduler trackScheduler;
+    private CommunicationScheduler scheduler;
 
-    public MusicAudioLoader(TrackScheduler trackScheduler) {
-        this.trackScheduler = trackScheduler;
+    public MusicAudioLoader(CommunicationScheduler scheduler) {
+        this.scheduler = scheduler;
     }
 
     @Override
     public void trackLoaded(AudioTrack track) {
-        trackScheduler.queue(track);
+        scheduler.queue(track);
         logger.debug("Loaded \"{}\"", track.getIdentifier());
     }
 
     @Override
     public void playlistLoaded(AudioPlaylist playlist) {
         for (AudioTrack track : playlist.getTracks()) {
-            trackScheduler.queue(track);
+            scheduler.queue(track);
         }
     }
 

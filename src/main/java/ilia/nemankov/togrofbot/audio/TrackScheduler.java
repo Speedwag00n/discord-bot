@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class TrackScheduler extends AudioEventAdapter {
+public class TrackScheduler extends AudioEventAdapter implements CommunicationScheduler {
 
     private static final Logger logger = LoggerFactory.getLogger(TrackScheduler.class);
 
@@ -25,10 +25,7 @@ public class TrackScheduler extends AudioEventAdapter {
         this.queue = new LinkedBlockingQueue<>();
     }
 
-    public void setCommunicationChannel(TextChannel communicationChannel) {
-        this.communicationChannel = communicationChannel;
-    }
-
+    @Override
     public void queue(AudioTrack track) {
         if (!player.startTrack(track, true)) {
             queue.offer(track);
@@ -41,7 +38,8 @@ public class TrackScheduler extends AudioEventAdapter {
         }
     }
 
-    public void nextTrack() {
+    @Override
+    public void next() {
         AudioTrack track = queue.poll();
         boolean result = player.startTrack(track, false);
         if (track != null) {
@@ -59,29 +57,47 @@ public class TrackScheduler extends AudioEventAdapter {
         }
         else {
             playingNow = null;
+            communicationChannel = null;
             logger.debug("Nothing to play");
         }
     }
 
+    @Override
+    public void clear(AudioTrack track) {
+        queue.remove(track);
+        logger.debug("Delete track with identifier {} from scheduler queue", track.getIdentifier());
+    }
+
+    @Override
     public void clearAll() {
         queue.clear();
         logger.debug("Track scheduler queue cleared");
     }
 
     @Override
-    public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-        if (endReason.mayStartNext) {
-            logger.debug("Ended a track \"{}\". Starting next", track.getIdentifier());
-            nextTrack();
-        }
-    }
-
     public boolean isEmpty() {
         return (queue.size() == 0);
     }
 
+    @Override
     public AudioTrack getPlayingNow() {
         return playingNow;
+    }
+
+    public TextChannel getCommunicationChannel() {
+        return communicationChannel;
+    }
+
+    public void setCommunicationChannel(TextChannel communicationChannel) {
+        this.communicationChannel = communicationChannel;
+    }
+
+    @Override
+    public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
+        if (endReason.mayStartNext) {
+            logger.debug("Ended a track \"{}\". Starting next", track.getIdentifier());
+            next();
+        }
     }
 
 }

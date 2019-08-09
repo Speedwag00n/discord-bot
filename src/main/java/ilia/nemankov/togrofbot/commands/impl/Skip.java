@@ -48,7 +48,7 @@ public class Skip implements Command {
         if (trackScheduler.getPlayingNow() == null) {
             response = "Nothing to skip";
         } else {
-            trackScheduler.nextTrack();
+            trackScheduler.next();
 
             response = null;
         }
