@@ -49,11 +49,22 @@ public class SettingsProvider {
 
     public String getListItemSeparator() {
         if (!properties.isEmpty()) {
-            return properties.getProperty("command.list.separator");
+            return properties.getProperty("pagination.list_separator");
         }
         else {
             return ":small_orange_diamond:";
         }
+    }
+
+    public int getDefaultPageSize() {
+        if (!properties.isEmpty()) {
+            try {
+                return Integer.valueOf(properties.getProperty("pagination.default_page_size"));
+            } catch (NumberFormatException e) {
+                logger.error("Page size isn't integer", e);
+            }
+        }
+        return 10;
     }
 
 }
