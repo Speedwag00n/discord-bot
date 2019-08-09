@@ -24,6 +24,7 @@ public class PlaylistEntity {
     private long guildId;
 
     @OneToMany (mappedBy="playlist", fetch=FetchType.LAZY)
+    @OrderBy("creation_datetime asc")
     private List<MusicLinkEntity> links;
 
 }

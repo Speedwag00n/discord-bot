@@ -15,6 +15,7 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.List;
 
 public class MAdd implements Command {
@@ -64,6 +65,7 @@ public class MAdd implements Command {
                         entity.setIdentifier(videoInfo.getIdentifier());
                         entity.setSource(videoInfo.getSource());
                         entity.setTitle(videoInfo.getTitle());
+                        entity.setCreationDatetime(new Date());
 
                         MusicLinkRepository musicLinkRepository = new MusicLinkRepositoryImpl();
                         musicLinkRepository.addMusicLink(entity);

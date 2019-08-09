@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity
 @Table(name = "music_link")
@@ -29,5 +30,8 @@ public class MusicLinkEntity implements Serializable {
 
     @Column(name = "title")
     private String title;
+
+    @Column(name = "creation_datetime")
+    private Date creationDatetime;
 
 }
