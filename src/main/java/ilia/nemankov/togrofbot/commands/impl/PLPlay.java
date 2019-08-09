@@ -74,6 +74,7 @@ public class PLPlay implements Command {
 
                         AudioLoadResultHandler audioLoader = new MusicAudioLoader(musicManager.getTrackScheduler());
 
+                        musicManager.getTrackScheduler().setCommunicationChannel(event.getChannel());
                         for (MusicLinkEntity musicLinkEntity : musicLinkEntities) {
                             VideoInfo info = new VideoInfo(musicLinkEntity.getIdentifier(), musicLinkEntity.getSource(), musicLinkEntity.getTitle());
                             AudioTrack track;
@@ -82,7 +83,7 @@ public class PLPlay implements Command {
                             }
                         }
 
-                        response = "Started play tracks from playlist " + playlist;
+                        response = null;
                     }
                 }
             }
@@ -91,7 +92,8 @@ public class PLPlay implements Command {
         }
 
         logger.debug("Generated response for command {}: \"{}\"", this.getClass().getSimpleName(), response);
-        event.getChannel().sendMessage(response).queue();
+        if (response != null)
+            event.getChannel().sendMessage(response).queue();
 
         logger.debug("Finished execution of {} command", this.getClass().getSimpleName());
     }

@@ -50,11 +50,12 @@ public class Skip implements Command {
         } else {
             trackScheduler.nextTrack();
 
-            response = "Track skipped";
+            response = null;
         }
 
         logger.debug("Generated response for command {}: \"{}\"", this.getClass().getSimpleName(), response);
-        event.getChannel().sendMessage(response).queue();
+        if (response != null)
+            event.getChannel().sendMessage(response).queue();
 
         logger.debug("Finished execution of {} command", this.getClass().getSimpleName());
     }

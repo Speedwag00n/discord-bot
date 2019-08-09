@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import net.dv8tion.jda.core.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,10 +18,15 @@ public class TrackScheduler extends AudioEventAdapter {
     private final AudioPlayer player;
     private final BlockingQueue<AudioTrack> queue;
     private AudioTrack playingNow;
+    private TextChannel communicationChannel;
 
     public TrackScheduler(AudioPlayer player) {
         this.player = player;
         this.queue = new LinkedBlockingQueue<>();
+    }
+
+    public void setCommunicationChannel(TextChannel communicationChannel) {
+        this.communicationChannel = communicationChannel;
     }
 
     public void queue(AudioTrack track) {
@@ -29,6 +35,8 @@ public class TrackScheduler extends AudioEventAdapter {
             logger.debug("Added a track with identifier \"{}\" to the queue", track.getIdentifier());
         } else {
             //Track started playing because the queue was empty
+            if (communicationChannel != null)
+                communicationChannel.sendMessage("Started play \"" + track.getInfo().title + "\"").queue();
             playingNow = track;
         }
     }
@@ -40,9 +48,13 @@ public class TrackScheduler extends AudioEventAdapter {
             if (result) {
                 playingNow = track;
                 logger.debug("Started a track \"{}\"", track.getIdentifier());
+                if (communicationChannel != null)
+                    communicationChannel.sendMessage("Started play \"" + track.getInfo().title + "\"").queue();
             } else {
                 playingNow = null;
                 logger.debug("Could not start a track \"{}\"", track.getIdentifier());
+                if (communicationChannel != null)
+                    communicationChannel.sendMessage("Failed to play \"" + track.getInfo().title + "\"").queue();
             }
         }
         else {
