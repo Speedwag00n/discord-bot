@@ -13,14 +13,18 @@ import ilia.nemankov.togrofbot.database.repository.PlaylistRepository;
 import ilia.nemankov.togrofbot.database.repository.impl.MusicLinkRepositoryImpl;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByNameAndGuildId;
+import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import ilia.nemankov.togrofbot.util.LinkUtils;
+import ilia.nemankov.togrofbot.util.MessageUtils;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.ResourceBundle;
 
 public class MAdd implements Command {
 
@@ -41,6 +45,8 @@ public class MAdd implements Command {
         logger.debug("Started execution of {} command", this.getClass().getSimpleName());
         logger.debug("Received message: {}", event.getMessage().getContentRaw());
 
+        ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
         String response = "";
         try {
             String playlist = null;
@@ -49,12 +55,18 @@ public class MAdd implements Command {
             try {
                 playlist = event.getMessage().getContentRaw().split("\\s+")[1];
             } catch (IndexOutOfBoundsException e) {
-                response = "Name of playlist must be presented";
+                response = MessageFormat.format(
+                        resources.getString("error.argument.empty"),
+                        MessageUtils.capitalizeFirstLetter(resources.getString("arguments.name_of_playlist"))
+                );
             }
             try {
                 link = event.getMessage().getContentRaw().split("\\s+")[2];
             } catch (IndexOutOfBoundsException e) {
-                response = "Track link must be presented";
+                response = MessageFormat.format(
+                        resources.getString("error.argument.empty"),
+                        MessageUtils.capitalizeFirstLetter(resources.getString("arguments.track_link"))
+                );
             }
 
             if (playlist != null && link != null) {
@@ -83,21 +95,28 @@ public class MAdd implements Command {
                             logger.debug("Adding track pushed to playing playlist queue");
                         }
 
-                        response = "Added \"" + videoInfo.getTitle() + "\" to \"" + playlist + "\" playlist";
+                        response = MessageFormat.format(
+                                resources.getString("message.command.music.add.successful"),
+                                videoInfo.getTitle(),
+                                playlist
+                        );
                     } else {
-                        response = "Specified playlist not found";
+                        response = resources.getString("message.command.playlist.not_found");
                     }
                 } else {
-                    response = "Can't load track by specified link";
+                    response = resources.getString("error.command.music.not_found");
                 }
             }
         } catch (IndexOutOfBoundsException e) {
-            response = "Name of playlist must be presented";
+            response = MessageFormat.format(
+                    resources.getString("error.argument.empty"),
+                    MessageUtils.capitalizeFirstLetter(resources.getString("arguments.name_of_playlist"))
+            );
         } catch (Throwable e) {
             if (e.getCause() instanceof ConstraintViolationException) {
-                response = "This link already exists in specified playlist";
+                response = resources.getString("message.command.music.add.exists");
             } else {
-                response = "Failed to add track";
+                response = resources.getString("error.command.music.add.failed");
             }
         }
 

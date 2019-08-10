@@ -5,10 +5,14 @@ import ilia.nemankov.togrofbot.database.entity.PlaylistEntity;
 import ilia.nemankov.togrofbot.database.repository.ItemNotPresentedException;
 import ilia.nemankov.togrofbot.database.repository.PlaylistRepository;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
+import ilia.nemankov.togrofbot.settings.SettingsProvider;
+import ilia.nemankov.togrofbot.util.MessageUtils;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 
 public class PLRemove implements Command {
 
@@ -29,6 +33,8 @@ public class PLRemove implements Command {
         logger.debug("Started execution of {} command", this.getClass().getSimpleName());
         logger.debug("Received message: {}", event.getMessage().getContentRaw());
 
+        ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
         String response;
         try {
             String argument = event.getMessage().getContentRaw().split("\\s+")[1];
@@ -40,11 +46,17 @@ public class PLRemove implements Command {
             PlaylistRepository repository = new PlaylistRepositoryImpl();
             repository.removePlaylist(entity);
 
-            response = "Removed playlist with name \"" + argument + "\"";
+            response = MessageFormat.format(
+                    resources.getString("message.command.playlist.remove.successful"),
+                    argument
+            );
         } catch (IndexOutOfBoundsException e) {
-            response = "Name of playlist must be presented";
+            response = MessageFormat.format(
+                    resources.getString("error.argument.empty"),
+                    MessageUtils.capitalizeFirstLetter(resources.getString("arguments.name_of_playlist"))
+            );
         } catch (ItemNotPresentedException e) {
-            response = "Playlist with specified name not found";
+            response = resources.getString("message.command.playlist.not_found");
         }
 
         logger.debug("Generated response for command {}: \"{}\"", this.getClass().getSimpleName(), response);

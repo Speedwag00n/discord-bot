@@ -10,6 +10,7 @@ import ilia.nemankov.togrofbot.database.entity.PlaylistEntity;
 import ilia.nemankov.togrofbot.database.repository.PlaylistRepository;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByNameAndGuildId;
+import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 public class Skip implements Command {
@@ -39,6 +41,8 @@ public class Skip implements Command {
         logger.debug("Started execution of {} command", this.getClass().getSimpleName());
         logger.debug("Received message: {}", event.getMessage().getContentRaw());
 
+        ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
         String response;
 
         GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
@@ -46,7 +50,7 @@ public class Skip implements Command {
 
         TrackScheduler trackScheduler = musicManager.getTrackScheduler();
         if (trackScheduler.getPlayingNow() == null) {
-            response = "Nothing to skip";
+            response = resources.getString("message.command.skip.nothing");
         } else {
             trackScheduler.next();
 

@@ -12,7 +12,9 @@ import ilia.nemankov.togrofbot.database.entity.VideoInfo;
 import ilia.nemankov.togrofbot.database.repository.PlaylistRepository;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByNameAndGuildId;
+import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import ilia.nemankov.togrofbot.util.LinkUtils;
+import ilia.nemankov.togrofbot.util.MessageUtils;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
@@ -20,7 +22,9 @@ import net.dv8tion.jda.core.managers.AudioManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.ResourceBundle;
 
 public class PLPlay implements Command {
 
@@ -41,6 +45,7 @@ public class PLPlay implements Command {
         logger.debug("Started execution of {} command", this.getClass().getSimpleName());
         logger.debug("Received message: {}", event.getMessage().getContentRaw());
 
+        ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
         VoiceChannel channel = event.getMember().getVoiceState().getChannel();
         String response;
@@ -51,18 +56,18 @@ public class PLPlay implements Command {
             List<PlaylistEntity> playlistEntities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
 
             if (playlistEntities.isEmpty()) {
-                response = "Playlist with specified name not found";
+                response = resources.getString("message.command.playlist.not_found");
             } else {
                 List<MusicLinkEntity> musicLinkEntities = playlistEntities.get(0).getLinks();
 
                 if (channel == null) {
-                    response = "You aren't connected to any voice channel. Please, select one";
+                    response = resources.getString("error.connection.no_chosen_voice_channel");
                 } else if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.VOICE_CONNECT)) {
-                    response = "I don't have enough permissions to connect to this voice channel";
+                    response = resources.getString("error.permissions.join_voice_channel");
                 } else {
                     AudioManager audioManager = event.getGuild().getAudioManager();
                     if (audioManager.isAttemptingToConnect()) {
-                        response = "I'm trying to connect now. Please, wait";
+                        response = resources.getString("error.connection.try_to_connect");
                     } else {
                         GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
                         GuildMusicManager musicManager = provider.getGuildMusicManager(event.getGuild());
@@ -89,7 +94,10 @@ public class PLPlay implements Command {
                 }
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            response = "Name of playlist must be presented";
+            response = MessageFormat.format(
+                    resources.getString("error.argument.empty"),
+                    MessageUtils.capitalizeFirstLetter(resources.getString("arguments.name_of_playlist"))
+            );
         }
 
         logger.debug("Generated response for command {}: \"{}\"", this.getClass().getSimpleName(), response);

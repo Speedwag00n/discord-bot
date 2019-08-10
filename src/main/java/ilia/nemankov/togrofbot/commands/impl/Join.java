@@ -4,12 +4,15 @@ import ilia.nemankov.togrofbot.audio.EmotionAudioLoader;
 import ilia.nemankov.togrofbot.audio.GuildMusicManager;
 import ilia.nemankov.togrofbot.audio.GuildMusicManagerProvider;
 import ilia.nemankov.togrofbot.commands.Command;
+import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.managers.AudioManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ResourceBundle;
 
 public class Join implements Command {
 
@@ -30,16 +33,18 @@ public class Join implements Command {
         logger.debug("Started execution of {} command", this.getClass().getSimpleName());
         logger.debug("Received message: {}", event.getMessage().getContentRaw());
 
+        ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
         VoiceChannel channel = event.getMember().getVoiceState().getChannel();
         String response;
         if (channel == null) {
-            response = "You aren't connected to any voice channel. Please, select one";
+            response = resources.getString("error.connection.no_chosen_voice_channel");
         } else if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.VOICE_CONNECT)) {
-            response = "I don't have enough permissions to connect to this voice channel";
+            response = resources.getString("error.permissions.join_voice_channel");
         } else {
             AudioManager audioManager = event.getGuild().getAudioManager();
             if (audioManager.isAttemptingToConnect()) {
-                response = "I'm trying to connect now. Please, wait";
+                response = resources.getString("error.connection.try_to_connect");
             } else {
                 GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
                 GuildMusicManager musicManager = provider.getGuildMusicManager(event.getGuild());
@@ -48,7 +53,7 @@ public class Join implements Command {
 
                 provider.getPlayerManager().loadItem("src/main/resources/audio/greeting.mp3", new EmotionAudioLoader(musicManager.getTrackScheduler()));
 
-                response = "Hear ye! Hear ye!";
+                response = resources.getString("message.command.join.greeting");
             }
         }
 

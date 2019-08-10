@@ -1,13 +1,16 @@
 package ilia.nemankov.togrofbot.commands.impl;
 
 import ilia.nemankov.togrofbot.commands.Command;
+import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Random;
+import java.util.ResourceBundle;
 
 public class Lottery implements Command {
 
@@ -29,14 +32,22 @@ public class Lottery implements Command {
         logger.debug("Started execution of {} command", this.getClass().getSimpleName());
         logger.debug("Received message: {}", event.getMessage().getContentRaw());
 
+        ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
         List<Member> members = event.getMessage().getMentionedMembers();
         Random random = new Random(System.currentTimeMillis());
         String response;
         if (members.size() > 0) {
-            response = "Winner is " + members.get(random.nextInt(members.size())).getAsMention();
+            response = MessageFormat.format(
+                    resources.getString("message.command.lottery.winner"),
+                    members.get(random.nextInt(members.size())).getAsMention()
+            );
         } else {
             members = event.getGuild().getMembers();
-            response = "Winner is " + members.get(random.nextInt(members.size())).getAsMention();
+            response = MessageFormat.format(
+                    resources.getString("message.command.lottery.winner"),
+                    members.get(random.nextInt(members.size())).getAsMention()
+            );
         }
         logger.debug("Generated response for command {}: \"{}\"", this.getClass().getSimpleName(), response);
         event.getChannel().sendMessage(response).queue();
