@@ -174,7 +174,7 @@ public class Playlist extends AbstractCommand {
                     .map(entity -> new MarkedRow(entity.getName()))
                     .collect(Collectors.toList());
             if (playlists.isEmpty()) {
-                return resources.getString("message.command.music.show.empty");
+                return resources.getString("message.command.playlist.show.empty");
             }
             try {
                 return PaginationUtils.buildPage(1, new DefaultHeader(), playlists, null).toString();
@@ -215,7 +215,7 @@ public class Playlist extends AbstractCommand {
                     .map(entity -> new MarkedRow(entity.getName()))
                     .collect(Collectors.toList());
             if (playlists.isEmpty()) {
-                return resources.getString("message.command.music.show.empty");
+                return resources.getString("message.command.playlist.show.empty");
             }
             int page = ((NumberArgument)arguments.get(1)).getNumberArgument().intValue();
             try {
