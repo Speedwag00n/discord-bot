@@ -5,7 +5,7 @@ import ilia.nemankov.togrofbot.commands.CommandItem;
 import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import ilia.nemankov.togrofbot.util.MessageUtils;
-import net.dv8tion.jda.core.MessageBuilder;
+import net.dv8tion.jda.core.entities.GuildVoiceState;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
@@ -42,14 +42,25 @@ public class Summon extends AbstractCommand {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
             List<Member> members = event.getMessage().getMentionedMembers();
-            for (Member member : members) {
-                MessageUtils.sendPrivateMessage(
-                        MessageFormat.format(
-                                resources.getString("message.command.call.message_body"),
-                                event.getMessage().getAuthor().getAsMention(),
-                                event.getGuild().getName()),
-                        member.getUser()
+            StringBuilder responseBuilder = new StringBuilder();
+            GuildVoiceState voiceState = event.getMember().getVoiceState();
+            if (voiceState.inVoiceChannel()) {
+                responseBuilder.append(MessageFormat.format(
+                        resources.getString("message.command.call.message_body_with_channel"),
+                        event.getMessage().getAuthor().getAsMention(),
+                        event.getGuild().getName(),
+                        voiceState.getChannel().getName())
                 );
+            } else {
+                responseBuilder.append(MessageFormat.format(
+                        resources.getString("message.command.call.message_body"),
+                        event.getMessage().getAuthor().getAsMention(),
+                        event.getGuild().getName())
+                );
+            }
+            String response = responseBuilder.toString();
+            for (Member member : members) {
+                MessageUtils.sendPrivateMessage(response, member.getUser());
             }
             return MessageFormat.format(
                     resources.getString("message.command.call.successful"),
