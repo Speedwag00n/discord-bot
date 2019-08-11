@@ -26,6 +26,8 @@ public class Help extends AbstractCommand {
 
     private static final Logger logger = LoggerFactory.getLogger(Help.class);
 
+    private static final String[] variants = new String[] {"help", "h"};
+
     @Override
     public String getName() {
         return this.getClass().getSimpleName().toLowerCase();
@@ -33,8 +35,13 @@ public class Help extends AbstractCommand {
 
     @Override
     public String[] getDescriptions() {
-        return new String[] {"help - Show the first page of all commands list",
-                "help <page> - Show the page of all commands list preset in argument of this command"};
+        return new String[] {"- Show the first page of all commands list",
+                "<page> - Show the page of all commands list preset in argument of this command"};
+    }
+
+    @Override
+    public String[] getVariants() {
+        return variants;
     }
 
     public Help() {
@@ -55,13 +62,13 @@ public class Help extends AbstractCommand {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
             CommandManager commandManager = CommandManagerMainImpl.getInstance();
-            List<Command> commands = commandManager.getOrderedCommands();
+            List<Command> commands = commandManager.getCommands();
             List<Row> commandsDescription = new ArrayList<>();
             String commandPrefix = SettingsProvider.getInstance().getCommandPrefix();
             for (Command command : commands) {
                 commandsDescription.addAll(Arrays
                         .stream(command.getDescriptions())
-                        .map(description -> new MarkedRow(commandPrefix + description))
+                        .map(description -> new MarkedRow(commandPrefix + command.getVariants()[0] + " " + description))
                         .collect(Collectors.toList()));
             }
             try {
@@ -87,13 +94,13 @@ public class Help extends AbstractCommand {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
             CommandManager commandManager = CommandManagerMainImpl.getInstance();
-            List<Command> commands = commandManager.getOrderedCommands();
+            List<Command> commands = commandManager.getCommands();
             List<Row> commandsDescription = new ArrayList<>();
             String commandPrefix = SettingsProvider.getInstance().getCommandPrefix();
             for (Command command : commands) {
                 commandsDescription.addAll(Arrays
                         .stream(command.getDescriptions())
-                        .map(description -> new MarkedRow(commandPrefix + description))
+                        .map(description -> new MarkedRow(commandPrefix + command.getVariants()[0] + " " + description))
                         .collect(Collectors.toList()));
             }
             int page = ((NumberArgument) arguments.get(0)).getNumberArgument().intValue();

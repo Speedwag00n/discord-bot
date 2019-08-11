@@ -19,9 +19,16 @@ public class Roll extends AbstractCommand {
 
     private static final Logger logger = LoggerFactory.getLogger(Roll.class);
 
+    private static final String[] variants = new String[] {"roll"};
+
     @Override
     public String[] getDescriptions() {
-        return new String[] { "roll - Generate a random number from 0 to 100" };
+        return new String[] { "- Generate a random number from 0 to 100" };
+    }
+
+    @Override
+    public String[] getVariants() {
+        return variants;
     }
 
     public Roll() {

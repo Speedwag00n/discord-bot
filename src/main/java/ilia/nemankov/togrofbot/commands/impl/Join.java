@@ -23,9 +23,16 @@ public class Join extends AbstractCommand {
 
     private static final Logger logger = LoggerFactory.getLogger(Join.class);
 
+    private static final String[] variants = new String[] {"join", "j"};
+
     @Override
     public String[] getDescriptions() {
-        return new String[] { "join - The bot joins your voice channel with a greeting" };
+        return new String[] { "- The bot joins your voice channel with a greeting" };
+    }
+
+    @Override
+    public String[] getVariants() {
+        return variants;
     }
 
     public Join() {

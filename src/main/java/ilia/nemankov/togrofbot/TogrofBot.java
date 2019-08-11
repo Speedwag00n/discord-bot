@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+import java.util.List;
 import java.util.Map;
 
 public class TogrofBot {
@@ -21,7 +22,7 @@ public class TogrofBot {
 
         try {
             CommandManager commandManager = CommandManagerMainImpl.getInstance();
-            Map<String, Command> commands = commandManager.getCommands();
+            List<Command> commands = commandManager.getCommands();
             CommandHandler commandHandler = CommandHandlerImpl.getInstance();
             commandHandler.initCommands(commands);
 

@@ -1,14 +1,11 @@
 package ilia.nemankov.togrofbot.commands;
 
 import ilia.nemankov.togrofbot.commands.impl.*;
-import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class CommandManagerMainImpl implements CommandManager {
 
@@ -16,23 +13,19 @@ public class CommandManagerMainImpl implements CommandManager {
 
     private static CommandManagerMainImpl instance;
 
-    private Map<String, Command> commands;
-    private List<Command> orderedCommands;
+    private List<Command> commands;
 
     private CommandManagerMainImpl() {
-        commands = new HashMap<>();
-        orderedCommands = new ArrayList<>();
-        SettingsProvider settings = SettingsProvider.getInstance();
-        String commandPrefix = settings.getCommandPrefix();
+        commands = new ArrayList<>();
         
-        addCommand(new Roll(), commandPrefix);
-        addCommand(new Lottery(), commandPrefix);
-        addCommand(new Help(), commandPrefix);
-        addCommand(new Join(), commandPrefix);
-        addCommand(new Playlist(), commandPrefix);
-        addCommand(new Skip(), commandPrefix);
-        addCommand(new Music(), commandPrefix);
-        addCommand(new Summon(), commandPrefix);
+        addCommand(new Roll());
+        addCommand(new Lottery());
+        addCommand(new Help());
+        addCommand(new Join());
+        addCommand(new Playlist());
+        addCommand(new Skip());
+        addCommand(new Music());
+        addCommand(new Summon());
 
         logger.debug("Initialized map of commands");
     }
@@ -46,18 +39,12 @@ public class CommandManagerMainImpl implements CommandManager {
     }
 
     @Override
-    public Map<String, Command> getCommands() {
+    public List<Command> getCommands() {
         return commands;
     }
 
-    @Override
-    public List<Command> getOrderedCommands() {
-        return orderedCommands;
-    }
-
-    private void addCommand(Command command, String commandPrefix) {
-        commands.put(commandPrefix + command.getName(), command);
-        orderedCommands.add(command);
+    private void addCommand(Command command) {
+        commands.add(command);
     }
 
 }

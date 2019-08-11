@@ -9,6 +9,7 @@ public interface Command {
 
     String getName();
     String[] getDescriptions();
+    String[] getVariants();
 
     String execute(GuildMessageReceivedEvent event, List<Argument> arguments);
 

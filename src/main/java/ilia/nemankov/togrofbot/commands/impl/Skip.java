@@ -20,9 +20,16 @@ public class Skip extends AbstractCommand {
 
     private static final Logger logger = LoggerFactory.getLogger(Skip.class);
 
+    private static final String[] variants = new String[] {"skip", "s"};
+
     @Override
     public String[] getDescriptions() {
-        return new String[] { "skip - Skip playing track" };
+        return new String[] { "- Skip playing track" };
+    }
+
+    @Override
+    public String[] getVariants() {
+        return variants;
     }
 
     public Skip() {

@@ -20,10 +20,17 @@ public class Lottery extends AbstractCommand {
 
     private static final Logger logger = LoggerFactory.getLogger(Lottery.class);
 
+    private static final String[] variants = new String[] {"lottety", "lot"};
+
     @Override
     public String[] getDescriptions() {
         return new String[] {"lottery - Choose a random member of current guild",
             "lottery <@mentions> - Choose a random member mentioned in arguments of this command (few mentions of the same user don't affect on results)"};
+    }
+
+    @Override
+    public String[] getVariants() {
+        return variants;
     }
 
     public Lottery() {

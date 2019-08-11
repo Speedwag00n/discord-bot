@@ -20,9 +20,16 @@ public class Summon extends AbstractCommand {
 
     private static final Logger logger = LoggerFactory.getLogger(Summon.class);
 
+    private static final String[] variants = new String[] {"summon", "sum"};
+
     @Override
     public String[] getDescriptions() {
-        return new String[] {"summon <@mentions> - The bot sends message to mentioned users with request to join guild where this command was used"};
+        return new String[] {"<@mentions> - The bot sends message to mentioned users with request to join guild where this command was used"};
+    }
+
+    @Override
+    public String[] getVariants() {
+        return variants;
     }
 
     public Summon() {

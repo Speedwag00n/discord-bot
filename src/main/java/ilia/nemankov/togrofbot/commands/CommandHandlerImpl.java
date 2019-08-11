@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -33,8 +34,16 @@ public class CommandHandlerImpl extends ListenerAdapter implements CommandHandle
         return instance;
     }
 
-    public void initCommands(Map<String, Command> commands) {
-        this.commands = commands;
+    public void initCommands(List<Command> commands) {
+        this.commands = new HashMap<>();
+
+        String commandPrefix = SettingsProvider.getInstance().getCommandPrefix();
+
+        for (Command command : commands) {
+            for (String variant : command.getVariants()) {
+                this.commands.put(commandPrefix + variant, command);
+            }
+        }
         logger.info("Initialized commands map of {}", this.getClass().getSimpleName());
     }
 

@@ -45,13 +45,20 @@ public class Playlist extends AbstractCommand {
 
     private static final Logger logger = LoggerFactory.getLogger(Playlist.class);
 
+    private static final String[] variants = new String[] {"playlist", "pl"};
+
     @Override
     public String[] getDescriptions() {
-        return new String[] {"playlist add <name> - Create new playlist with name <name>",
-                "playlist remove <name> - Remove playlist with name <name>",
-                "playlist show - Show the first page of all playlists list for this guild",
-                "playlist show <page> - Show the page of all playlists list preset in argument of this command",
-                "playlist play <playlist> - The bot starts play tracks from the specified playlist"};
+        return new String[] {"add <name> - Create new playlist with name <name>",
+                "remove <name> - Remove playlist with name <name>",
+                "show - Show the first page of all playlists list for this guild",
+                "show <page> - Show the page of all playlists list preset in argument of this command",
+                "play <playlist> - The bot starts play tracks from the specified playlist"};
+    }
+
+    @Override
+    public String[] getVariants() {
+        return variants;
     }
 
     public Playlist() {

@@ -1,9 +1,9 @@
 package ilia.nemankov.togrofbot.commands;
 
-import java.util.Map;
+import java.util.List;
 
 public interface CommandHandler {
 
-    void initCommands(Map<String, Command> commands);
+    void initCommands(List<Command> commands);
 
 }

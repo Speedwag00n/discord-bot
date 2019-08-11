@@ -42,11 +42,18 @@ public class Music extends AbstractCommand {
 
     private static final Logger logger = LoggerFactory.getLogger(Music.class);
 
+    private static final String[] variants = new String[] {"music", "m"};
+
     @Override
     public String[] getDescriptions() {
-        return new String[] {"music add <playlist_name> <link> - Add a track link to a specified playlist",
-                "music show <playlist> - Show the first page of all tracks list for specified playlist",
-                "music show <playlist> <page> - Show the <page> of all tracks list for specified playlist"};
+        return new String[] {"add <playlist_name> <link> - Add a track link to a specified playlist",
+                "show <playlist> - Show the first page of all tracks list for specified playlist",
+                "show <playlist> <page> - Show the <page> of all tracks list for specified playlist"};
+    }
+
+    @Override
+    public String[] getVariants() {
+        return variants;
     }
 
     public Music() {
