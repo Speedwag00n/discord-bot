@@ -29,11 +29,7 @@ public class CommandManagerMainImpl implements CommandManager {
         addCommand(new Lottery(), commandPrefix);
         addCommand(new Help(), commandPrefix);
         addCommand(new Join(), commandPrefix);
-        addCommand(new PLAdd(), commandPrefix);
-        addCommand(new PLRemove(), commandPrefix);
-        addCommand(new Playlists(), commandPrefix);
-        addCommand(new MAdd(), commandPrefix);
-        addCommand(new PLPlay(), commandPrefix);
+        addCommand(new Playlist(), commandPrefix);
         addCommand(new Skip(), commandPrefix);
         addCommand(new Music(), commandPrefix);
 

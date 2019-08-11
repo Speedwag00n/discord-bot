@@ -1,5 +1,7 @@
 package ilia.nemankov.togrofbot.commands;
 
+import ilia.nemankov.togrofbot.commands.parsing.DefaultCommandParser;
+import ilia.nemankov.togrofbot.commands.parsing.ParsedCommand;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
@@ -35,13 +37,20 @@ public class CommandHandlerImpl extends ListenerAdapter implements CommandHandle
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        String commandName = event.getMessage().getContentRaw().split(" ")[0].toLowerCase();
-        Command command = commands.get(commandName);
+        ParsedCommand parsedCommand = (new DefaultCommandParser()).parse(event.getMessage().getContentRaw());
+        Command command = commands.get(parsedCommand.getCommandName());
         if (command != null) {
             try {
-                command.execute(event);
+                logger.debug("Started execution of {} command", this.getClass().getSimpleName());
+                logger.debug("Received message: {}", event.getMessage().getContentRaw());
+                String response = command.execute(event, parsedCommand.getArguments());
+                if (response != null) {
+                    event.getChannel().sendMessage(response).queue();
+                }
+                //TODO refactor message sending. Call here "MessageSender"
+                logger.debug("Finished execution of {} command", this.getClass().getSimpleName());
             } catch (Exception e) {
-                logger.error("Failed to execute {} command", commandName, e);
+                logger.error("Failed to execute {} command", parsedCommand.getCommandName(), e);
             }
         }
     }

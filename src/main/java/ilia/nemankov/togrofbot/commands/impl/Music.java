@@ -1,110 +1,186 @@
 package ilia.nemankov.togrofbot.commands.impl;
 
-import ilia.nemankov.togrofbot.commands.Command;
+import ilia.nemankov.togrofbot.audio.GuildMusicManager;
+import ilia.nemankov.togrofbot.audio.GuildMusicManagerProvider;
+import ilia.nemankov.togrofbot.audio.MusicAudioLoader;
+import ilia.nemankov.togrofbot.audio.TrackScheduler;
+import ilia.nemankov.togrofbot.commands.AbstractCommand;
+import ilia.nemankov.togrofbot.commands.CommandItem;
+import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
+import ilia.nemankov.togrofbot.commands.parsing.argument.NumberArgument;
+import ilia.nemankov.togrofbot.commands.parsing.matching.ArgumentsTemplate;
+import ilia.nemankov.togrofbot.commands.parsing.matching.NumberArgumentMatcher;
+import ilia.nemankov.togrofbot.commands.parsing.matching.StringArgumentMatcher;
+import ilia.nemankov.togrofbot.database.entity.MusicLinkEntity;
 import ilia.nemankov.togrofbot.database.entity.PlaylistEntity;
+import ilia.nemankov.togrofbot.database.entity.VideoInfo;
+import ilia.nemankov.togrofbot.database.repository.MusicLinkRepository;
 import ilia.nemankov.togrofbot.database.repository.PlaylistRepository;
+import ilia.nemankov.togrofbot.database.repository.impl.MusicLinkRepositoryImpl;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByNameAndGuildId;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
-import ilia.nemankov.togrofbot.util.MessageUtils;
+import ilia.nemankov.togrofbot.util.LinkUtils;
 import ilia.nemankov.togrofbot.util.pagination.PageNotFoundException;
 import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
 import ilia.nemankov.togrofbot.util.pagination.header.impl.DefaultHeader;
 import ilia.nemankov.togrofbot.util.pagination.row.Row;
 import ilia.nemankov.togrofbot.util.pagination.row.impl.DefaultIndexedRow;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
-public class Music implements Command {
+public class Music extends AbstractCommand {
 
     private static final Logger logger = LoggerFactory.getLogger(Music.class);
 
     @Override
-    public String getName() {
-        return this.getClass().getSimpleName().toLowerCase();
-    }
-
-    @Override
     public String[] getDescriptions() {
-        return new String[] {"music <playlist> - Show the first page of all tracks list for specified playlist",
-                "music <playlist> <page> - Show the <page> of all tracks list for specified playlist"};
+        return new String[] {"music add <playlist_name> <link> - Add a track link to a specified playlist",
+                "music show <playlist> - Show the first page of all tracks list for specified playlist",
+                "music show <playlist> <page> - Show the <page> of all tracks list for specified playlist"};
     }
 
-    @Override
-    public void execute(GuildMessageReceivedEvent event) {
-        logger.debug("Started execution of {} command", this.getClass().getSimpleName());
-        logger.debug("Received message: {}", event.getMessage().getContentRaw());
+    public Music() {
+        List<CommandItem> commandItems = new ArrayList<>();
+        commandItems.add(new MusicAddByLink());
+        commandItems.add(new MusicShowFirstPage());
+        commandItems.add(new MusicShowSpecifiedPage());
+        setCommandItems(commandItems);
+    }
 
-        ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+    private class MusicAddByLink extends CommandItem {
 
-        String response;
-        try {
-            String playlist = event.getMessage().getContentRaw().split("\\s+")[1];
+        public MusicAddByLink() {
+            super(new ArgumentsTemplate("add", new StringArgumentMatcher(), new StringArgumentMatcher()));
+        }
+
+        @Override
+        public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
+            String playlist = arguments.get(1).getArgument();
+            String link = arguments.get(2).getArgument();
+            try {
+                VideoInfo videoInfo = LinkUtils.parseLink(link);
+                if (videoInfo != null) {
+                    PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
+                    List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
+
+                    if (!playlistEntities.isEmpty()) {
+                        MusicLinkEntity entity = new MusicLinkEntity();
+                        entity.setPlaylist(playlistEntities.get(0));
+                        entity.setIdentifier(videoInfo.getIdentifier());
+                        entity.setSource(videoInfo.getSource());
+                        entity.setTitle(videoInfo.getTitle());
+                        entity.setCreationDatetime(new Date());
+
+                        MusicLinkRepository musicLinkRepository = new MusicLinkRepositoryImpl();
+                        musicLinkRepository.addMusicLink(entity);
+
+                        GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
+                        GuildMusicManager musicManager = provider.getGuildMusicManager(event.getGuild());
+                        TrackScheduler scheduler = musicManager.getTrackScheduler();
+
+                        if (scheduler.getPlayingNow() != null && playlist.equals(scheduler.getPlaylist())) {
+                            provider.getPlayerManager().loadItem(link, new MusicAudioLoader(scheduler));
+                            logger.debug("Adding track pushed to playing playlist queue");
+                        }
+
+                        return MessageFormat.format(
+                                resources.getString("message.command.music.add.successful"),
+                                videoInfo.getTitle(),
+                                playlist
+                        );
+                    } else {
+                        return resources.getString("message.command.playlist.not_found");
+                    }
+                } else {
+                    return resources.getString("error.command.music.not_found");
+                }
+            } catch (Throwable e) {
+                if (e.getCause() instanceof ConstraintViolationException) {
+                    return resources.getString("message.command.music.add.exists");
+                } else {
+                    return resources.getString("error.command.music.add.failed");
+                }
+            }
+        }
+    }
+
+    private class MusicShowFirstPage extends CommandItem {
+
+        public MusicShowFirstPage() {
+            super(new ArgumentsTemplate("show", new StringArgumentMatcher()));
+        }
+
+        @Override
+        public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
+            String playlist = arguments.get(1).getArgument();
 
             PlaylistRepository repository = new PlaylistRepositoryImpl();
             List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
 
             if (entities.isEmpty()) {
-                response = resources.getString("message.command.playlist.create.exists");
-            } else {
-                List<Row> titles = entities.get(0).getLinks()
-                        .parallelStream()
-                        .map(entity -> new DefaultIndexedRow(entity.getTitle()))
-                        .collect(Collectors.toList());
-                try {
-                    int page = Integer.parseInt(event.getMessage().getContentRaw().split("\\s+")[2]);
-                    if (titles.isEmpty()) {
-                        response = MessageFormat.format(
-                                resources.getString("message.command.music.show.empty"),
-                                playlist
-                        );
-                    } else {
-                        response = PaginationUtils.buildPage(page, new DefaultHeader(), titles, null).toString();
-                    }
-                } catch (NumberFormatException e) {
-                    response = "Argument must be a number";
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    if (titles.isEmpty()) {
-                        response = MessageFormat.format(
-                                resources.getString("message.command.music.show.empty"),
-                                playlist
-                        );
-                    } else {
-                        try {
-                            response = PaginationUtils.buildPage(1, new DefaultHeader(), titles, null).toString();
-                        } catch (PageNotFoundException e1) {
-                            response = MessageFormat.format(
-                                    resources.getString("message.command.playlist.show.failed"),
-                                    1
-                            );
-                            logger.error("Error caused by building first page for command {}", this.getClass().getSimpleName(), e1);
-                        }
-                    }
-                } catch (PageNotFoundException e) {
-                    response = MessageFormat.format(
-                            resources.getString("message.pagination.page.not_found"),
-                            Integer.parseInt(event.getMessage().getContentRaw().split("\\s+")[1]),
-                            this.getName()
-                    );
-                }
+                return resources.getString("message.command.playlist.create.exists");
             }
-        } catch (ArrayIndexOutOfBoundsException e) {
-            response = MessageFormat.format(
-                    resources.getString("error.argument.empty"),
-                    MessageUtils.capitalizeFirstLetter(resources.getString("arguments.name_of_playlist"))
-            );
+            List<Row> titles = entities.get(0).getLinks()
+                    .parallelStream()
+                    .map(entity -> new DefaultIndexedRow(entity.getTitle()))
+                    .collect(Collectors.toList());
+            try {
+                return PaginationUtils.buildPage(1, new DefaultHeader(), titles, null).toString();
+            } catch (PageNotFoundException e) {
+                logger.error("Error caused by building first page for command {}", this.getClass().getSimpleName(), e);
+                return MessageFormat.format(
+                        resources.getString("message.command.playlist.show.failed"),
+                        1
+                );
+            }
+        }
+    }
+
+    private class MusicShowSpecifiedPage extends CommandItem {
+
+        public MusicShowSpecifiedPage() {
+            super(new ArgumentsTemplate("show", new StringArgumentMatcher(), new NumberArgumentMatcher()));
         }
 
-        logger.debug("Generated response for command {}: \"{}\"", this.getClass().getSimpleName(), response);
-        event.getChannel().sendMessage(response).queue();
+        @Override
+        public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
-        logger.debug("Finished execution of {} command", this.getClass().getSimpleName());
+            String playlist = arguments.get(1).getArgument();
+            PlaylistRepository repository = new PlaylistRepositoryImpl();
+            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
+
+            if (entities.isEmpty()) {
+                return resources.getString("message.command.playlist.create.exists");
+            }
+            List<Row> titles = entities.get(0).getLinks()
+                    .parallelStream()
+                    .map(entity -> new DefaultIndexedRow(entity.getTitle()))
+                    .collect(Collectors.toList());
+            int page = ((NumberArgument)arguments.get(2)).getNumberArgument().intValue();
+            try {
+                return PaginationUtils.buildPage(page, new DefaultHeader(), titles, null).toString();
+            } catch (PageNotFoundException e) {
+                return MessageFormat.format(
+                        resources.getString("message.pagination.page.not_found"),
+                        page
+                );
+            }
+        }
     }
 
 }
