@@ -47,7 +47,7 @@ public class CommandHandlerImpl extends ListenerAdapter implements CommandHandle
                 if (response != null) {
                     event.getChannel().sendMessage(response).queue();
                 }
-                //TODO refactor message sending. Call here "MessageSender"
+                //TODO refactor message sending. Summon here "MessageSender"
                 logger.debug("Finished execution of {} command", this.getClass().getSimpleName());
             } catch (Exception e) {
                 logger.error("Failed to execute {} command", parsedCommand.getCommandName(), e);
