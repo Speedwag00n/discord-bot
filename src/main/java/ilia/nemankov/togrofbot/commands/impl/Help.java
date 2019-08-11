@@ -6,6 +6,7 @@ import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
 import ilia.nemankov.togrofbot.commands.parsing.argument.NumberArgument;
 import ilia.nemankov.togrofbot.commands.parsing.matching.ArgumentsTemplate;
 import ilia.nemankov.togrofbot.commands.parsing.matching.NumberArgumentMatcher;
+import ilia.nemankov.togrofbot.commands.parsing.matching.StringArgumentMatcher;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import ilia.nemankov.togrofbot.util.pagination.PageNotFoundException;
 import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
@@ -18,7 +19,6 @@ import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -43,6 +43,7 @@ public class Help extends AbstractCommand {
         List<CommandItem> commandItems = new ArrayList<>();
         commandItems.add(new HelpShowFirstPage());
         commandItems.add(new HelpShowSpecifiedPage());
+        commandItems.add(new HelpShowCommandUsages());
         setCommandItems(commandItems);
     }
 
@@ -130,6 +131,48 @@ public class Help extends AbstractCommand {
                         resources.getString("message.pagination.page.not_found"),
                         page
                 );
+            }
+        }
+    }
+
+    private class HelpShowCommandUsages extends CommandItem {
+
+        public HelpShowCommandUsages() {
+            super(new ArgumentsTemplate(null, new StringArgumentMatcher()));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.help.show_command_usages.args"),
+                    resources.getString("description.command.help.show_command_usages.desc")
+            );
+            return description;
+        }
+
+        @Override
+        public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
+            String commandName = arguments.get(0).getArgument();
+            Command command = CommandHandlerImpl.getInstance().getCommandByName(commandName);
+            if (command == null) {
+                return resources.getString("message.command.help.command.not_found");
+            }
+            List<Row> commandsDescription = new ArrayList<>();
+            commandsDescription.addAll(
+                    command
+                            .getDescriptions()
+                            .stream()
+                            .map(description -> new MarkedRow(buildContent(command.getVariants()[0], description)))
+                            .collect(Collectors.toList())
+            );
+            try {
+                return PaginationUtils.buildPage(1, commandsDescription.size(), null, commandsDescription, null).toString();
+            } catch (PageNotFoundException e) {
+                logger.error("Error caused by building help page for command {}", commandName, e);
+                return null;
             }
         }
     }

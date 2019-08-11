@@ -9,6 +9,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ public class CommandHandlerImpl extends ListenerAdapter implements CommandHandle
         return instance;
     }
 
+    @Override
     public void initCommands(List<Command> commands) {
         this.commands = new HashMap<>();
 
@@ -48,6 +50,16 @@ public class CommandHandlerImpl extends ListenerAdapter implements CommandHandle
     }
 
     @Override
+    public Command getCommandByName(String name) {
+        if (!commands.isEmpty()) {
+            String commandPrefix = SettingsProvider.getInstance().getCommandPrefix();
+            return commands.get(commandPrefix + name);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
         ParsedCommand parsedCommand = (new DefaultCommandParser()).parse(event.getMessage().getContentRaw());
         Command command = commands.get(parsedCommand.getCommandName());
@@ -59,10 +71,10 @@ public class CommandHandlerImpl extends ListenerAdapter implements CommandHandle
                 if (response != null) {
                     MessageUtils.sendTextResponse(event, response, false);
                 }
-                logger.debug("Finished execution of {} command", this.getClass().getSimpleName());
+                logger.debug("Finished execution of {} command", parsedCommand.getCommandName());
             } catch (Exception e) {
                 ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-                MessageUtils.sendTextResponse(event, resources.getString("error.command.failed"), false);
+                MessageUtils.sendTextResponse(event, MessageFormat.format(resources.getString("error.command.failed"), parsedCommand.getCommandName()), false);
                 logger.error("Failed to execute {} command", parsedCommand.getCommandName(), e);
             }
         }

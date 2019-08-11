@@ -20,8 +20,10 @@ public class PaginationUtils {
         if (!((pageNumber > 0) && (rows.size() / itemsOnPage + ((rows.size() % itemsOnPage == 0) ? 0 : 1)) >= pageNumber)) {
             throw new PageNotFoundException();
         }
-        header.setPageNumber(pageNumber);
-        header.setMaxPageNumber((rows.size() / itemsOnPage + ((rows.size() % itemsOnPage == 0) ? 0 : 1)));
+        if (header != null) {
+            header.setPageNumber(pageNumber);
+            header.setMaxPageNumber((rows.size() / itemsOnPage + ((rows.size() % itemsOnPage == 0) ? 0 : 1)));
+        }
         List<Row> pageRows = new ArrayList<>();
         for (int i = (pageNumber - 1) * itemsOnPage; i < ((rows.size() > pageNumber * itemsOnPage) ? pageNumber * itemsOnPage : rows.size()); i++) {
             Row row = rows.get(i);

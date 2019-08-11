@@ -25,12 +25,16 @@ public class Page {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append(header.toString() + "\n");
+        if (header != null) {
+            builder.append(header.toString() + "\n");
+        }
         for (Row row : rows) {
             builder.append(row.toString() + "\n");
         }
         //TODO added footer realisation class
-        //builder.append(footer.toString());
+        if (footer != null) {
+            builder.append(footer.toString());
+        }
         return builder.toString();
     }
 
