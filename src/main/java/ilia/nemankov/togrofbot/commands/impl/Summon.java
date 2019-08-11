@@ -46,7 +46,7 @@ public class Summon extends AbstractCommand {
                 MessageUtils.sendPrivateMessage(
                         MessageFormat.format(
                                 resources.getString("message.command.call.message_body"),
-                                event.getMessage().getAuthor().getName(),
+                                event.getMessage().getAuthor().getAsMention(),
                                 event.getGuild().getName()),
                         member.getUser()
                 );
