@@ -4,6 +4,7 @@ import ilia.nemankov.togrofbot.commands.AbstractCommand;
 import ilia.nemankov.togrofbot.commands.CommandItem;
 import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
+import ilia.nemankov.togrofbot.util.MessageUtils;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
@@ -41,22 +42,14 @@ public class Summon extends AbstractCommand {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
             List<Member> members = event.getMessage().getMentionedMembers();
-            MessageBuilder builder = new MessageBuilder();
             for (Member member : members) {
-                builder
-                        .append(resources.getString("message.command.join.greeting") + "\n")
-                        .append(
-                                MessageFormat.format(
-                                        resources.getString("message.command.call.message_body"),
-                                        event.getMessage().getAuthor().getName(),
-                                        event.getGuild().getName())
-                        )
-                        .sendTo(
-                                member.getUser()
-                                        .openPrivateChannel()
-                                        .complete()
-                        )
-                        .queue();
+                MessageUtils.sendPrivateMessage(
+                        MessageFormat.format(
+                                resources.getString("message.command.call.message_body"),
+                                event.getMessage().getAuthor().getName(),
+                                event.getGuild().getName()),
+                        member.getUser()
+                );
             }
             return MessageFormat.format(
                     resources.getString("message.command.call.successful"),

@@ -2,6 +2,8 @@ package ilia.nemankov.togrofbot.commands;
 
 import ilia.nemankov.togrofbot.commands.parsing.DefaultCommandParser;
 import ilia.nemankov.togrofbot.commands.parsing.ParsedCommand;
+import ilia.nemankov.togrofbot.settings.SettingsProvider;
+import ilia.nemankov.togrofbot.util.MessageUtils;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
@@ -9,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 public class CommandHandlerImpl extends ListenerAdapter implements CommandHandler {
 
@@ -45,11 +48,12 @@ public class CommandHandlerImpl extends ListenerAdapter implements CommandHandle
                 logger.debug("Received message: {}", event.getMessage().getContentRaw());
                 String response = command.execute(event, parsedCommand.getArguments());
                 if (response != null) {
-                    event.getChannel().sendMessage(response).queue();
+                    MessageUtils.sendTextResponse(event, response, false);
                 }
-                //TODO refactor message sending. Summon here "MessageSender"
                 logger.debug("Finished execution of {} command", this.getClass().getSimpleName());
             } catch (Exception e) {
+                ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+                MessageUtils.sendTextResponse(event, resources.getString("error.command.failed"), false);
                 logger.error("Failed to execute {} command", parsedCommand.getCommandName(), e);
             }
         }

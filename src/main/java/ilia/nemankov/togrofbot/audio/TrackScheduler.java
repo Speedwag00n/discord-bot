@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
+import ilia.nemankov.togrofbot.util.MessageUtils;
 import net.dv8tion.jda.core.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,11 +39,12 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
             //Track started playing because the queue was empty
             if (communicationChannel != null) {
                 ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-                communicationChannel.sendMessage(
+                MessageUtils.sendTextResponse(
+                        communicationChannel,
                         MessageFormat.format(
-                                resources.getString("message.scheduler.play.start"),
-                                track.getInfo().title)
-                ).queue();
+                                        resources.getString("message.scheduler.play.start"),
+                                        track.getInfo().title)
+                );
             }
             playingNow = track;
         }
@@ -58,22 +60,24 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
                 logger.debug("Started a track \"{}\"", track.getIdentifier());
                 if (communicationChannel != null) {
                     ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-                    communicationChannel.sendMessage(
+                    MessageUtils.sendTextResponse(
+                            communicationChannel,
                             MessageFormat.format(
                                     resources.getString("message.scheduler.play.start"),
                                     track.getInfo().title)
-                    ).queue();
+                    );
                 }
             } else {
                 playingNow = null;
                 logger.debug("Could not start a track \"{}\"", track.getIdentifier());
                 if (communicationChannel != null) {
                     ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-                    communicationChannel.sendMessage(
+                    MessageUtils.sendTextResponse(
+                            communicationChannel,
                             MessageFormat.format(
                                     resources.getString("message.scheduler.play.failed"),
                                     track.getInfo().title)
-                    ).queue();
+                    );
                 }
             }
         }
