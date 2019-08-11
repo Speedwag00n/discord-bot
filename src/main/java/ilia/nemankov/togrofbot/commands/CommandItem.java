@@ -1,5 +1,6 @@
 package ilia.nemankov.togrofbot.commands;
 
+import ilia.nemankov.togrofbot.commands.parsing.CommandVariantDescription;
 import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
 import ilia.nemankov.togrofbot.commands.parsing.matching.ArgumentsTemplate;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,8 @@ import java.util.List;
 public abstract class CommandItem {
 
     private ArgumentsTemplate argumentsTemplate;
+
+    public abstract CommandVariantDescription getDescription();
 
     public abstract String execute(GuildMessageReceivedEvent event, List<Argument> arguments);
 

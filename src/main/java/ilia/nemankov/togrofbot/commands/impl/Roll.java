@@ -2,6 +2,7 @@ package ilia.nemankov.togrofbot.commands.impl;
 
 import ilia.nemankov.togrofbot.commands.AbstractCommand;
 import ilia.nemankov.togrofbot.commands.CommandItem;
+import ilia.nemankov.togrofbot.commands.parsing.CommandVariantDescription;
 import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
 import ilia.nemankov.togrofbot.commands.parsing.matching.ArgumentsTemplate;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
@@ -22,11 +23,6 @@ public class Roll extends AbstractCommand {
     private static final String[] variants = new String[] {"roll"};
 
     @Override
-    public String[] getDescriptions() {
-        return new String[] { "- Generate a random number from 0 to 100" };
-    }
-
-    @Override
     public String[] getVariants() {
         return variants;
     }
@@ -41,6 +37,16 @@ public class Roll extends AbstractCommand {
 
         public DefaultRoll() {
             super(new ArgumentsTemplate(null));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.roll.default.args"),
+                    resources.getString("description.command.roll.default.desc")
+            );
+            return description;
         }
 
         @Override

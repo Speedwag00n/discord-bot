@@ -7,6 +7,7 @@ import ilia.nemankov.togrofbot.audio.GuildMusicManagerProvider;
 import ilia.nemankov.togrofbot.audio.MusicAudioLoader;
 import ilia.nemankov.togrofbot.commands.AbstractCommand;
 import ilia.nemankov.togrofbot.commands.CommandItem;
+import ilia.nemankov.togrofbot.commands.parsing.CommandVariantDescription;
 import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
 import ilia.nemankov.togrofbot.commands.parsing.argument.NumberArgument;
 import ilia.nemankov.togrofbot.commands.parsing.matching.ArgumentsTemplate;
@@ -48,15 +49,6 @@ public class Playlist extends AbstractCommand {
     private static final String[] variants = new String[] {"playlist", "pl"};
 
     @Override
-    public String[] getDescriptions() {
-        return new String[] {"add <name> - Create new playlist with name <name>",
-                "remove <name> - Remove playlist with name <name>",
-                "show - Show the first page of all playlists list for this guild",
-                "show <page> - Show the page of all playlists list preset in argument of this command",
-                "play <playlist> - The bot starts play tracks from the specified playlist"};
-    }
-
-    @Override
     public String[] getVariants() {
         return variants;
     }
@@ -75,6 +67,16 @@ public class Playlist extends AbstractCommand {
 
         public PlaylistAdd() {
             super(new ArgumentsTemplate("add", new StringArgumentMatcher()));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.playlist.add.args"),
+                    resources.getString("description.command.playlist.add.desc")
+            );
+            return description;
         }
 
         @Override
@@ -112,6 +114,16 @@ public class Playlist extends AbstractCommand {
         }
 
         @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.playlist.remove_by_name.args"),
+                    resources.getString("description.command.playlist.remove_by_name.desc")
+            );
+            return description;
+        }
+
+        @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
@@ -139,6 +151,16 @@ public class Playlist extends AbstractCommand {
 
         public PlaylistShowFirstPage() {
             super(new ArgumentsTemplate("show"));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.playlist.show_first_page.args"),
+                    resources.getString("description.command.playlist.show_first_page.desc")
+            );
+            return description;
         }
 
         @Override
@@ -173,6 +195,16 @@ public class Playlist extends AbstractCommand {
         }
 
         @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.playlist.show_specified_page.args"),
+                    resources.getString("description.command.playlist.show_specified_page.desc")
+            );
+            return description;
+        }
+
+        @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
@@ -201,6 +233,16 @@ public class Playlist extends AbstractCommand {
 
         public PlaylistPlay() {
             super(new ArgumentsTemplate("play", new StringArgumentMatcher()));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.playlist.play.args"),
+                    resources.getString("description.command.playlist.play.desc")
+            );
+            return description;
         }
 
         @Override

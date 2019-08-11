@@ -2,6 +2,7 @@ package ilia.nemankov.togrofbot.commands.impl;
 
 import ilia.nemankov.togrofbot.commands.AbstractCommand;
 import ilia.nemankov.togrofbot.commands.CommandItem;
+import ilia.nemankov.togrofbot.commands.parsing.CommandVariantDescription;
 import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import ilia.nemankov.togrofbot.util.MessageUtils;
@@ -23,11 +24,6 @@ public class Summon extends AbstractCommand {
     private static final String[] variants = new String[] {"summon", "sum"};
 
     @Override
-    public String[] getDescriptions() {
-        return new String[] {"<@mentions> - The bot sends message to mentioned users with request to join guild where this command was used"};
-    }
-
-    @Override
     public String[] getVariants() {
         return variants;
     }
@@ -42,6 +38,16 @@ public class Summon extends AbstractCommand {
 
         public SummonMentioned() {
             super();
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.summon.mentioned.args"),
+                    resources.getString("description.command.summon.mentioned.desc")
+            );
+            return description;
         }
 
         @Override

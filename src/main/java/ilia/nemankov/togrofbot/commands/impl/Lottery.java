@@ -2,6 +2,7 @@ package ilia.nemankov.togrofbot.commands.impl;
 
 import ilia.nemankov.togrofbot.commands.AbstractCommand;
 import ilia.nemankov.togrofbot.commands.CommandItem;
+import ilia.nemankov.togrofbot.commands.parsing.CommandVariantDescription;
 import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
 import ilia.nemankov.togrofbot.commands.parsing.matching.ArgumentsTemplate;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
@@ -20,13 +21,7 @@ public class Lottery extends AbstractCommand {
 
     private static final Logger logger = LoggerFactory.getLogger(Lottery.class);
 
-    private static final String[] variants = new String[] {"lottety", "lot"};
-
-    @Override
-    public String[] getDescriptions() {
-        return new String[] {"lottery - Choose a random member of current guild",
-            "lottery <@mentions> - Choose a random member mentioned in arguments of this command (few mentions of the same user don't affect on results)"};
-    }
+    private static final String[] variants = new String[] {"lottery", "lot"};
 
     @Override
     public String[] getVariants() {
@@ -47,6 +42,16 @@ public class Lottery extends AbstractCommand {
         }
 
         @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.lottery.all_guild.args"),
+                    resources.getString("description.command.lottery.all_guild.desc")
+            );
+            return description;
+        }
+
+        @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
@@ -63,6 +68,16 @@ public class Lottery extends AbstractCommand {
 
         public LotteryMentioned() {
             super();
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.lottery.mentioned.args"),
+                    resources.getString("description.command.lottery.mentioned.desc")
+            );
+            return description;
         }
 
         @Override

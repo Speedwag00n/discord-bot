@@ -6,6 +6,7 @@ import ilia.nemankov.togrofbot.audio.MusicAudioLoader;
 import ilia.nemankov.togrofbot.audio.TrackScheduler;
 import ilia.nemankov.togrofbot.commands.AbstractCommand;
 import ilia.nemankov.togrofbot.commands.CommandItem;
+import ilia.nemankov.togrofbot.commands.parsing.CommandVariantDescription;
 import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
 import ilia.nemankov.togrofbot.commands.parsing.argument.NumberArgument;
 import ilia.nemankov.togrofbot.commands.parsing.matching.ArgumentsTemplate;
@@ -45,13 +46,6 @@ public class Music extends AbstractCommand {
     private static final String[] variants = new String[] {"music", "m"};
 
     @Override
-    public String[] getDescriptions() {
-        return new String[] {"add <playlist_name> <link> - Add a track link to a specified playlist",
-                "show <playlist> - Show the first page of all tracks list for specified playlist",
-                "show <playlist> <page> - Show the <page> of all tracks list for specified playlist"};
-    }
-
-    @Override
     public String[] getVariants() {
         return variants;
     }
@@ -68,6 +62,16 @@ public class Music extends AbstractCommand {
 
         public MusicAddByLink() {
             super(new ArgumentsTemplate("add", new StringArgumentMatcher(), new StringArgumentMatcher()));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.music.add_by_link.args"),
+                    resources.getString("description.command.music.add_by_link.desc")
+            );
+            return description;
         }
 
         @Override
@@ -130,6 +134,16 @@ public class Music extends AbstractCommand {
         }
 
         @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.music.show_first_page.args"),
+                    resources.getString("description.command.music.show_first_page.desc")
+            );
+            return description;
+        }
+
+        @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
@@ -161,6 +175,16 @@ public class Music extends AbstractCommand {
 
         public MusicShowSpecifiedPage() {
             super(new ArgumentsTemplate("show", new StringArgumentMatcher(), new NumberArgumentMatcher()));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.music.show_specified_page.args"),
+                    resources.getString("description.command.music.show_specified_page.desc")
+            );
+            return description;
         }
 
         @Override

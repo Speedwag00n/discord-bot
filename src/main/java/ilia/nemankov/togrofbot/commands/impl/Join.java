@@ -5,6 +5,7 @@ import ilia.nemankov.togrofbot.audio.GuildMusicManager;
 import ilia.nemankov.togrofbot.audio.GuildMusicManagerProvider;
 import ilia.nemankov.togrofbot.commands.AbstractCommand;
 import ilia.nemankov.togrofbot.commands.CommandItem;
+import ilia.nemankov.togrofbot.commands.parsing.CommandVariantDescription;
 import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
 import ilia.nemankov.togrofbot.commands.parsing.matching.ArgumentsTemplate;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
@@ -26,11 +27,6 @@ public class Join extends AbstractCommand {
     private static final String[] variants = new String[] {"join", "j"};
 
     @Override
-    public String[] getDescriptions() {
-        return new String[] { "- The bot joins your voice channel with a greeting" };
-    }
-
-    @Override
     public String[] getVariants() {
         return variants;
     }
@@ -45,6 +41,16 @@ public class Join extends AbstractCommand {
 
         public DefaultJoin() {
             super(new ArgumentsTemplate(null));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.join.default.args"),
+                    resources.getString("description.command.join.default.desc")
+            );
+            return description;
         }
 
         @Override

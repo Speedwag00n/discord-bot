@@ -1,5 +1,6 @@
 package ilia.nemankov.togrofbot.commands;
 
+import ilia.nemankov.togrofbot.commands.parsing.CommandVariantDescription;
 import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import lombok.Setter;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 @Setter
 public abstract class AbstractCommand implements Command {
@@ -21,6 +23,15 @@ public abstract class AbstractCommand implements Command {
     @Override
     public String getName() {
         return this.getClass().getSimpleName().toLowerCase();
+    }
+
+    @Override
+    public List<CommandVariantDescription> getDescriptions() {
+        if (commandItems != null) {
+            return commandItems.stream().map(command -> command.getDescription()).collect(Collectors.toList());
+        } else {
+            return null;
+        }
     }
 
     @Override

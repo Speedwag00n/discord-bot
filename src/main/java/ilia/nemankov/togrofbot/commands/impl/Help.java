@@ -1,6 +1,7 @@
 package ilia.nemankov.togrofbot.commands.impl;
 
 import ilia.nemankov.togrofbot.commands.*;
+import ilia.nemankov.togrofbot.commands.parsing.CommandVariantDescription;
 import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
 import ilia.nemankov.togrofbot.commands.parsing.argument.NumberArgument;
 import ilia.nemankov.togrofbot.commands.parsing.matching.ArgumentsTemplate;
@@ -34,12 +35,6 @@ public class Help extends AbstractCommand {
     }
 
     @Override
-    public String[] getDescriptions() {
-        return new String[] {"- Show the first page of all commands list",
-                "<page> - Show the page of all commands list preset in argument of this command"};
-    }
-
-    @Override
     public String[] getVariants() {
         return variants;
     }
@@ -58,18 +53,30 @@ public class Help extends AbstractCommand {
         }
 
         @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.help.show_first_page.args"),
+                    resources.getString("description.command.help.show_first_page.desc")
+            );
+            return description;
+        }
+
+        @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
             CommandManager commandManager = CommandManagerMainImpl.getInstance();
             List<Command> commands = commandManager.getCommands();
             List<Row> commandsDescription = new ArrayList<>();
-            String commandPrefix = SettingsProvider.getInstance().getCommandPrefix();
             for (Command command : commands) {
-                commandsDescription.addAll(Arrays
-                        .stream(command.getDescriptions())
-                        .map(description -> new MarkedRow(commandPrefix + command.getVariants()[0] + " " + description))
-                        .collect(Collectors.toList()));
+                commandsDescription.addAll(
+                        command
+                                .getDescriptions()
+                                .stream()
+                                .map(description -> new MarkedRow(buildContent(command.getVariants()[0], description)))
+                                .collect(Collectors.toList())
+                );
             }
             try {
                 return PaginationUtils.buildPage(1, new DefaultHeader(), commandsDescription, null).toString();
@@ -90,18 +97,30 @@ public class Help extends AbstractCommand {
         }
 
         @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.help.show_specified_page.args"),
+                    resources.getString("description.command.help.show_specified_page.desc")
+            );
+            return description;
+        }
+
+        @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
             CommandManager commandManager = CommandManagerMainImpl.getInstance();
             List<Command> commands = commandManager.getCommands();
             List<Row> commandsDescription = new ArrayList<>();
-            String commandPrefix = SettingsProvider.getInstance().getCommandPrefix();
             for (Command command : commands) {
-                commandsDescription.addAll(Arrays
-                        .stream(command.getDescriptions())
-                        .map(description -> new MarkedRow(commandPrefix + command.getVariants()[0] + " " + description))
-                        .collect(Collectors.toList()));
+                commandsDescription.addAll(
+                        command
+                                .getDescriptions()
+                                .stream()
+                                .map(description -> new MarkedRow(buildContent(command.getVariants()[0], description)))
+                                .collect(Collectors.toList())
+                );
             }
             int page = ((NumberArgument) arguments.get(0)).getNumberArgument().intValue();
             try {
@@ -113,6 +132,16 @@ public class Help extends AbstractCommand {
                 );
             }
         }
+    }
+
+    private String buildContent(String commandName, CommandVariantDescription description) {
+        String commandPrefix = SettingsProvider.getInstance().getCommandPrefix();
+        String content = commandPrefix
+                + commandName + " "
+                + ((description.getCommandArgs() != null && !description.getCommandArgs().equals("")) ? description.getCommandArgs()+ " " : "")
+                + "- "
+                + description.getDescription();
+        return content;
     }
 
 }
