@@ -27,6 +27,7 @@ public class CommandManagerMainImpl implements CommandManager {
         addCommand(new Music());
         addCommand(new Summon());
         addCommand(new Leave());
+        addCommand(new Play());
 
         logger.debug("Initialized map of commands");
     }

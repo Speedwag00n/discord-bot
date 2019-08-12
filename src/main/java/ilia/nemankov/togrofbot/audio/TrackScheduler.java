@@ -69,6 +69,7 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
                 }
             } else {
                 playingNow = null;
+                playlist = null;
                 logger.debug("Could not start a track \"{}\"", track.getIdentifier());
                 if (communicationChannel != null) {
                     ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
@@ -99,6 +100,7 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
     public void clearAll() {
         queue.clear();
         playingNow = null;
+        playlist = null;
         logger.debug("Track scheduler queue cleared");
     }
 
