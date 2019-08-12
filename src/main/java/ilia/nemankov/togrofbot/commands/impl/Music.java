@@ -153,7 +153,13 @@ public class Music extends AbstractCommand {
             List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
 
             if (entities.isEmpty()) {
-                return resources.getString("message.command.playlist.create.exists");
+                return resources.getString("message.command.playlist.not_found");
+            }
+            if (entities.get(0).getLinks().isEmpty()) {
+                return MessageFormat.format(
+                        resources.getString("message.command.music.show.empty"),
+                        entities.get(0).getName()
+                );
             }
             List<Row> titles = entities.get(0).getLinks()
                     .parallelStream()
@@ -196,7 +202,13 @@ public class Music extends AbstractCommand {
             List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
 
             if (entities.isEmpty()) {
-                return resources.getString("message.command.playlist.create.exists");
+                return resources.getString("message.command.playlist.not_found");
+            }
+            if (entities.get(0).getLinks().isEmpty()) {
+                return MessageFormat.format(
+                        resources.getString("message.command.music.show.empty"),
+                        entities.get(0).getName()
+                );
             }
             List<Row> titles = entities.get(0).getLinks()
                     .parallelStream()
