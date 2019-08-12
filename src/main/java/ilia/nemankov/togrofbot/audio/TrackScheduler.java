@@ -98,6 +98,7 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
     @Override
     public void clearAll() {
         queue.clear();
+        playingNow = null;
         logger.debug("Track scheduler queue cleared");
     }
 
