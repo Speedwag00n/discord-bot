@@ -83,6 +83,8 @@ public class Play extends AbstractCommand {
 
                     audioManager.openAudioConnection(channel);
 
+                    musicManager.getTrackScheduler().setCommunicationChannel(event.getChannel());
+
                     provider.getPlayerManager().loadItem(link, new MusicAudioLoader(musicManager.getTrackScheduler()));
 
                     return null;
