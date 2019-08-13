@@ -78,4 +78,21 @@ public class LinkUtils {
         }
     }
 
+    public static String buildLink(VideoInfo videoInfo) {
+        String link;
+        switch (videoInfo.getSource()) {
+            case "youtube":
+                link = "https://www.youtube.com/watch?v=" + videoInfo.getIdentifier();
+                break;
+            case "vimeo":
+                link = videoInfo.getIdentifier();
+                break;
+                default:
+                    logger.error("Unknown source for video");
+                    return null;
+        }
+        logger.debug("Built link {}", link);
+        return link;
+    }
+
 }

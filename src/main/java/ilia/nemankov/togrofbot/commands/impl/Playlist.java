@@ -1,7 +1,5 @@
 package ilia.nemankov.togrofbot.commands.impl;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import ilia.nemankov.togrofbot.audio.GuildMusicManager;
 import ilia.nemankov.togrofbot.audio.GuildMusicManagerProvider;
 import ilia.nemankov.togrofbot.audio.MusicAudioLoader;
@@ -35,7 +33,6 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.NoResultException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -274,15 +271,14 @@ public class Playlist extends AbstractCommand {
 
                     audioManager.openAudioConnection(channel);
 
-                    AudioLoadResultHandler audioLoader = new MusicAudioLoader(musicManager.getTrackScheduler());
                     musicManager.getTrackScheduler().setPlaylist(playlist);
 
                     musicManager.getTrackScheduler().setCommunicationChannel(event.getChannel());
                     for (MusicLinkEntity musicLinkEntity : musicLinkEntities) {
                         VideoInfo info = new VideoInfo(musicLinkEntity.getIdentifier(), musicLinkEntity.getSource(), musicLinkEntity.getTitle());
-                        AudioTrack track;
-                        if ((track = LinkUtils.buildAudioTrack(info)) != null) {
-                            audioLoader.trackLoaded(track);
+                        String link;
+                        if ((link = LinkUtils.buildLink(info)) != null) {
+                            provider.getPlayerManager().loadItem(link, new MusicAudioLoader(musicManager.getTrackScheduler()));
                         }
                     }
 
