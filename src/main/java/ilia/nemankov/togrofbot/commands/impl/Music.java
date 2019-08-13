@@ -53,6 +53,7 @@ public class Music extends AbstractCommand {
     public Music() {
         List<CommandItem> commandItems = new ArrayList<>();
         commandItems.add(new MusicAddByLink());
+        commandItems.add(new MusicRemoveByIndex());
         commandItems.add(new MusicRemoveByLink());
         commandItems.add(new MusicShowFirstPage());
         commandItems.add(new MusicShowSpecifiedPage());
@@ -258,6 +259,10 @@ public class Music extends AbstractCommand {
             String link = arguments.get(2).getArgument();
 
             VideoInfo videoInfo = LinkUtils.parseLink(link);
+            if (videoInfo == null) {
+                return resources.getString("message.command.music.remove.incorrect_link");
+            }
+
             MusicLinkEntity entity = new MusicLinkEntity();
             entity.setIdentifier(videoInfo.getIdentifier());
             entity.setPlaylist(playlistEntities.get(0));
@@ -271,6 +276,56 @@ public class Music extends AbstractCommand {
                         resources.getString("message.command.music.remove.successful"),
                         playlist
                 );
+            }
+        }
+    }
+
+    private class MusicRemoveByIndex extends CommandItem {
+
+        public MusicRemoveByIndex() {
+            super(new ArgumentsTemplate("remove", new StringArgumentMatcher(), new NumberArgumentMatcher()));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.music.remove_by_index.args"),
+                    resources.getString("description.command.music.remove_by_index.desc")
+            );
+            return description;
+        }
+
+        @Override
+        public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
+            String playlist = arguments.get(1).getArgument();
+            PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
+            List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
+
+            if (playlistEntities.isEmpty()) {
+                return resources.getString("message.command.music.remove.playlist_not_found");
+            }
+
+            int index = ((NumberArgument)arguments.get(2)).getNumberArgument().intValue();
+            if (index <= 0) {
+                return resources.getString("message.command.music.remove.incorrect_index");
+            }
+
+            List<MusicLinkEntity> musicLinkEntities = playlistEntities.get(0).getLinks();
+            MusicLinkRepository musicLinkRepository = new MusicLinkRepositoryImpl();
+            try {
+                if (musicLinkRepository.removeMusicLink(musicLinkEntities.get(index - 1)) == 0) {
+                    return resources.getString("message.command.music.remove.track_not_found");
+                } else {
+                    return MessageFormat.format(
+                            resources.getString("message.command.music.remove.successful"),
+                            playlist
+                    );
+                }
+            } catch (IndexOutOfBoundsException e) {
+                return resources.getString("message.command.music.remove.track_not_found");
             }
         }
     }
