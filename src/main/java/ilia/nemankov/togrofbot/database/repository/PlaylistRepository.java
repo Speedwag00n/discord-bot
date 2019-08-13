@@ -12,5 +12,6 @@ public interface PlaylistRepository {
     void updatePlaylist(PlaylistEntity entity);
 
     List<PlaylistEntity> query(HibernateSpecification specification);
+    List<PlaylistEntity> query(HibernateSpecification specification, QuerySettings settings);
 
 }

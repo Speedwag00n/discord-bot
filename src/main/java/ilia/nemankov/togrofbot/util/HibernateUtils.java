@@ -2,21 +2,20 @@ package ilia.nemankov.togrofbot.util;
 
 import ilia.nemankov.togrofbot.database.entity.MusicLinkEntity;
 import ilia.nemankov.togrofbot.database.entity.PlaylistEntity;
+import ilia.nemankov.togrofbot.database.repository.QuerySettings;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HibernateSessionFactory {
+import javax.persistence.TypedQuery;
 
-    private static final Logger logger = LoggerFactory.getLogger(HibernateSessionFactory.class);
+public class HibernateUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(HibernateUtils.class);
 
     private static SessionFactory instance;
-
-    private HibernateSessionFactory() {
-
-    }
 
     public static SessionFactory getSessionFactory() {
         if (instance == null) {
@@ -34,6 +33,17 @@ public class HibernateSessionFactory {
             }
         }
         return instance;
+    }
+
+    public static <T> TypedQuery<T> applySettings(TypedQuery<T> query, QuerySettings settings) {
+        if (settings.getFirstResult() != null) {
+            query.setFirstResult(settings.getFirstResult());
+        }
+        if (settings.getMaxResult() != null) {
+            query.setMaxResults(settings.getMaxResult());
+        }
+
+        return query;
     }
 
 }

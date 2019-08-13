@@ -2,8 +2,9 @@ package ilia.nemankov.togrofbot.database.repository.impl;
 
 import ilia.nemankov.togrofbot.database.entity.MusicLinkEntity;
 import ilia.nemankov.togrofbot.database.repository.MusicLinkRepository;
+import ilia.nemankov.togrofbot.database.repository.QuerySettings;
 import ilia.nemankov.togrofbot.database.specification.HibernateSpecification;
-import ilia.nemankov.togrofbot.util.HibernateSessionFactory;
+import ilia.nemankov.togrofbot.util.HibernateUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -18,7 +19,7 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
 
     @Override
     public void addMusicLink(MusicLinkEntity entity) {
-        Session session = HibernateSessionFactory.getSessionFactory().openSession();
+        Session session = HibernateUtils.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
 
         session.save(entity);
@@ -29,7 +30,7 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
 
     @Override
     public int removeMusicLink(MusicLinkEntity entity) {
-        Session session = HibernateSessionFactory.getSessionFactory().openSession();
+        Session session = HibernateUtils.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
 
         Query query = session.createQuery("DELETE MusicLinkEntity WHERE identifier = :paramIdentifier and playlist = :paramPlaylist and source = :paramSource");
@@ -47,7 +48,7 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
 
     @Override
     public void updateMusicLink(MusicLinkEntity entity) {
-        Session session = HibernateSessionFactory.getSessionFactory().openSession();
+        Session session = HibernateUtils.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
 
         session.update(entity);
@@ -58,7 +59,12 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
 
     @Override
     public List<MusicLinkEntity> query(HibernateSpecification specification) {
-        Session session = HibernateSessionFactory.getSessionFactory().openSession();
+        return this.query(specification, null);
+    }
+
+    @Override
+    public List<MusicLinkEntity> query(HibernateSpecification specification, QuerySettings settings) {
+        Session session = HibernateUtils.getSessionFactory().openSession();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<MusicLinkEntity> criteria = builder.createQuery(MusicLinkEntity.class);
 
@@ -66,6 +72,9 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
         criteria.select(root).where(specification.getPredicate(builder, root));
 
         TypedQuery<MusicLinkEntity> query = session.createQuery(criteria);
+        if (settings != null) {
+            HibernateUtils.applySettings(query, settings);
+        }
 
         return query.getResultList();
     }

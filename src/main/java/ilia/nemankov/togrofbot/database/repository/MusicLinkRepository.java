@@ -12,5 +12,6 @@ public interface MusicLinkRepository {
     void updateMusicLink(MusicLinkEntity entity);
 
     List<MusicLinkEntity> query(HibernateSpecification specification);
+    List<MusicLinkEntity> query(HibernateSpecification specification, QuerySettings settings);
 
 }
