@@ -57,6 +57,30 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Override
+    public long count(HibernateSpecification specification) {
+        return this.count(specification, null);
+    }
+
+    @Override
+    public long count(HibernateSpecification specification, QuerySettings settings) {
+        Session session = HibernateUtils.getSessionFactory().openSession();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
+
+        Root<PlaylistEntity> root = criteria.from(PlaylistEntity.class);
+        criteria.select(builder.count(root)).where(specification.getPredicate(builder, root));
+
+        TypedQuery<Long> query = session.createQuery(criteria);
+        if (settings != null) {
+            HibernateUtils.applySettings(query, settings);
+        }
+
+        long result = query.getSingleResult();
+        session.close();
+        return result;
+    }
+
+    @Override
     public List<PlaylistEntity> query(HibernateSpecification specification) {
         return this.query(specification, null);
     }
@@ -75,7 +99,9 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
             HibernateUtils.applySettings(query, settings);
         }
 
-        return query.getResultList();
+        List<PlaylistEntity> result = query.getResultList();
+        session.close();
+        return result;
     }
 
 }

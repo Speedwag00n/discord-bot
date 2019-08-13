@@ -19,6 +19,7 @@ import ilia.nemankov.togrofbot.database.repository.PlaylistRepository;
 import ilia.nemankov.togrofbot.database.repository.QuerySettings;
 import ilia.nemankov.togrofbot.database.repository.impl.MusicLinkRepositoryImpl;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
+import ilia.nemankov.togrofbot.database.specification.HibernateSpecification;
 import ilia.nemankov.togrofbot.database.specification.impl.MusicLinkSpecificationByPlaylist;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByGuildId;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByNameAndGuildId;

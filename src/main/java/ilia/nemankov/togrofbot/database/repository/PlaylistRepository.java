@@ -11,6 +11,9 @@ public interface PlaylistRepository {
     int removePlaylist(PlaylistEntity entity);
     void updatePlaylist(PlaylistEntity entity);
 
+    long count(HibernateSpecification specification);
+    long count(HibernateSpecification specification, QuerySettings settings);
+
     List<PlaylistEntity> query(HibernateSpecification specification);
     List<PlaylistEntity> query(HibernateSpecification specification, QuerySettings settings);
 

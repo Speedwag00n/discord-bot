@@ -58,6 +58,30 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
     }
 
     @Override
+    public long count(HibernateSpecification specification) {
+        return this.count(specification, null);
+    }
+
+    @Override
+    public long count(HibernateSpecification specification, QuerySettings settings) {
+        Session session = HibernateUtils.getSessionFactory().openSession();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
+
+        Root<MusicLinkEntity> root = criteria.from(MusicLinkEntity.class);
+        criteria.select(builder.count(root)).where(specification.getPredicate(builder, root));
+
+        TypedQuery<Long> query = session.createQuery(criteria);
+        if (settings != null) {
+            HibernateUtils.applySettings(query, settings);
+        }
+
+        long result = query.getSingleResult();
+        session.close();
+        return result;
+    }
+
+    @Override
     public List<MusicLinkEntity> query(HibernateSpecification specification) {
         return this.query(specification, null);
     }
