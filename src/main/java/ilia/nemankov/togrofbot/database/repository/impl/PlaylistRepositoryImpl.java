@@ -1,7 +1,6 @@
 package ilia.nemankov.togrofbot.database.repository.impl;
 
 import ilia.nemankov.togrofbot.database.entity.PlaylistEntity;
-import ilia.nemankov.togrofbot.database.repository.ItemNotPresentedException;
 import ilia.nemankov.togrofbot.database.repository.PlaylistRepository;
 import ilia.nemankov.togrofbot.database.specification.HibernateSpecification;
 import ilia.nemankov.togrofbot.util.HibernateSessionFactory;
@@ -29,26 +28,20 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Override
-    public void removePlaylist(PlaylistEntity entity) throws ItemNotPresentedException {
+    public int removePlaylist(PlaylistEntity entity) {
         Session session = HibernateSessionFactory.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
 
-        Query query = session.createQuery("FROM PlaylistEntity WHERE name = :paramName and guildId = :paramGuildId");
+        Query query = session.createQuery("DELETE PlaylistEntity WHERE name = :paramName and guildId = :paramGuildId");
         query.setParameter("paramName", entity.getName());
         query.setParameter("paramGuildId", entity.getGuildId());
 
-        if (query.getResultList().size() == 0) {
-            throw new ItemNotPresentedException();
-        }
-
-        query = session.createQuery("DELETE PlaylistEntity WHERE name = :paramName and guildId = :paramGuildId");
-        query.setParameter("paramName", entity.getName());
-        query.setParameter("paramGuildId", entity.getGuildId());
-
-        query.executeUpdate();
+        int deleted = query.executeUpdate();
 
         transaction.commit();
         session.close();
+
+        return deleted;
     }
 
     @Override

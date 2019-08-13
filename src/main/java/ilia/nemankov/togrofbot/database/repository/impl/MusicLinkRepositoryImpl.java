@@ -1,14 +1,12 @@
 package ilia.nemankov.togrofbot.database.repository.impl;
 
 import ilia.nemankov.togrofbot.database.entity.MusicLinkEntity;
-import ilia.nemankov.togrofbot.database.repository.ItemNotPresentedException;
 import ilia.nemankov.togrofbot.database.repository.MusicLinkRepository;
 import ilia.nemankov.togrofbot.database.specification.HibernateSpecification;
 import ilia.nemankov.togrofbot.util.HibernateSessionFactory;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -29,7 +27,7 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
     }
 
     @Override
-    public void removeMusicLink(MusicLinkEntity entity) throws ItemNotPresentedException {
+    public void removeMusicLink(MusicLinkEntity entity) {
         Session session = HibernateSessionFactory.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
 

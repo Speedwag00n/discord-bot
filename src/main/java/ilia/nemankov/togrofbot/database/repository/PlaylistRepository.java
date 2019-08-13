@@ -8,7 +8,7 @@ import java.util.List;
 public interface PlaylistRepository {
 
     void addPlaylist(PlaylistEntity entity);
-    void removePlaylist(PlaylistEntity entity) throws ItemNotPresentedException;
+    int removePlaylist(PlaylistEntity entity);
     void updatePlaylist(PlaylistEntity entity);
 
     List<PlaylistEntity> query(HibernateSpecification specification);

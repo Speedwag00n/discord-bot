@@ -16,7 +16,6 @@ import ilia.nemankov.togrofbot.commands.parsing.matching.StringArgumentMatcher;
 import ilia.nemankov.togrofbot.database.entity.MusicLinkEntity;
 import ilia.nemankov.togrofbot.database.entity.PlaylistEntity;
 import ilia.nemankov.togrofbot.database.entity.VideoInfo;
-import ilia.nemankov.togrofbot.database.repository.ItemNotPresentedException;
 import ilia.nemankov.togrofbot.database.repository.PlaylistRepository;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByGuildId;
@@ -36,6 +35,7 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.NoResultException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -129,20 +129,18 @@ public class Playlist extends AbstractCommand {
 
             String name = arguments.get(1).getArgument();
 
-            try {
-                PlaylistEntity entity = new PlaylistEntity();
-                entity.setName(name);
-                entity.setGuildId(event.getGuild().getIdLong());
+            PlaylistEntity entity = new PlaylistEntity();
+            entity.setName(name);
+            entity.setGuildId(event.getGuild().getIdLong());
 
-                PlaylistRepository repository = new PlaylistRepositoryImpl();
-                repository.removePlaylist(entity);
-
+            PlaylistRepository repository = new PlaylistRepositoryImpl();
+            if (repository.removePlaylist(entity) == 0) {
+                return resources.getString("message.command.playlist.not_found");
+            } else {
                 return MessageFormat.format(
                         resources.getString("message.command.playlist.remove.successful"),
                         name
                 );
-            } catch (ItemNotPresentedException e) {
-                return resources.getString("message.command.playlist.not_found");
             }
         }
     }
