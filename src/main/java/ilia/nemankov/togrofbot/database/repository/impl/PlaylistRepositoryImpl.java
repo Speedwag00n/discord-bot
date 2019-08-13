@@ -12,6 +12,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.criteria.Root;
 import java.util.List;
 
@@ -49,6 +50,12 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     public void updatePlaylist(PlaylistEntity entity) {
         Session session = HibernateUtils.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
+
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaUpdate<PlaylistEntity> criteria = builder.createCriteriaUpdate(PlaylistEntity.class);
+
+        Root<PlaylistEntity> root = criteria.from(PlaylistEntity.class);
+        criteria.set(root.get("name"), entity.getName());
 
         session.update(entity);
 

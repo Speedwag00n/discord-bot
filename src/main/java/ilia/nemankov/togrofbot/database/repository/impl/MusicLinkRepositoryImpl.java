@@ -47,17 +47,6 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
     }
 
     @Override
-    public void updateMusicLink(MusicLinkEntity entity) {
-        Session session = HibernateUtils.getSessionFactory().openSession();
-        Transaction transaction = session.beginTransaction();
-
-        session.update(entity);
-
-        transaction.commit();
-        session.close();
-    }
-
-    @Override
     public long count(HibernateSpecification specification) {
         return this.count(specification, null);
     }

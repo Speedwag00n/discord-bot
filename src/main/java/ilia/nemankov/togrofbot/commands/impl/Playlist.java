@@ -63,6 +63,7 @@ public class Playlist extends AbstractCommand {
         commandItems.add(new PlaylistShowSpecifiedPage());
         commandItems.add(new PlaylistPlay());
         commandItems.add(new PlaylistPlayFromTrack());
+        commandItems.add(new PlaylistUpdate());
         setCommandItems(commandItems);
     }
 
@@ -367,6 +368,53 @@ public class Playlist extends AbstractCommand {
                     return null;
                 }
             }
+        }
+    }
+
+    private class PlaylistUpdate extends CommandItem {
+
+        public PlaylistUpdate() {
+            super(new ArgumentsTemplate("rename", new StringArgumentMatcher(), new StringArgumentMatcher()));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.playlist.update.args"),
+                    resources.getString("description.command.playlist.update.desc")
+            );
+            return description;
+        }
+
+        @Override
+        public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
+            String oldName = arguments.get(1).getArgument();
+            String newName = arguments.get(2).getArgument();
+
+            PlaylistRepository repository = new PlaylistRepositoryImpl();
+            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(oldName, event.getGuild().getIdLong()));
+
+            if (entities.isEmpty()) {
+                return resources.getString("message.command.playlist.update.not_found");
+            }
+
+            PlaylistEntity entity = entities.get(0);
+            entity.setName(newName);
+
+            try {
+                repository.updatePlaylist(entity);
+            } catch (Throwable e) {
+                if (e.getCause() instanceof ConstraintViolationException) {
+                    return resources.getString("message.command.playlist.update.exists");
+                } else {
+                    return resources.getString("message.command.playlist.update.failed");
+                }
+            }
+
+            return resources.getString("message.command.playlist.update.successful");
         }
     }
 

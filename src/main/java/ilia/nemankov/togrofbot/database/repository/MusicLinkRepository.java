@@ -9,7 +9,6 @@ public interface MusicLinkRepository {
 
     void addMusicLink(MusicLinkEntity entity);
     int removeMusicLink(MusicLinkEntity entity);
-    void updateMusicLink(MusicLinkEntity entity);
 
     long count(HibernateSpecification specification);
     long count(HibernateSpecification specification, QuerySettings settings);
