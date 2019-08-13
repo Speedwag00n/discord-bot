@@ -7,6 +7,7 @@ import ilia.nemankov.togrofbot.util.HibernateSessionFactory;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -27,20 +28,21 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
     }
 
     @Override
-    public void removeMusicLink(MusicLinkEntity entity) {
+    public int removeMusicLink(MusicLinkEntity entity) {
         Session session = HibernateSessionFactory.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
 
-        //TODO check exists ot not
+        Query query = session.createQuery("DELETE MusicLinkEntity WHERE identifier = :paramIdentifier and playlist = :paramPlaylist and source = :paramSource");
+        query.setParameter("paramIdentifier", entity.getIdentifier());
+        query.setParameter("paramPlaylist", entity.getPlaylist());
+        query.setParameter("paramSource", entity.getSource());
 
-/*        Query query = session.createQuery("DELETE PlaylistEntity WHERE name = :paramName and guildId = :paramGuildId");
-        query.setParameter("paramName", entity.getPlaylist().getId());
-        query.setParameter("paramGuildId", entity.getLink());
-
-        query.executeUpdate();*/
+        int result = query.executeUpdate();
 
         transaction.commit();
         session.close();
+
+        return result;
     }
 
     @Override

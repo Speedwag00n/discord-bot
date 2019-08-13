@@ -53,6 +53,7 @@ public class Music extends AbstractCommand {
     public Music() {
         List<CommandItem> commandItems = new ArrayList<>();
         commandItems.add(new MusicAddByLink());
+        commandItems.add(new MusicRemoveByLink());
         commandItems.add(new MusicShowFirstPage());
         commandItems.add(new MusicShowSpecifiedPage());
         setCommandItems(commandItems);
@@ -221,6 +222,54 @@ public class Music extends AbstractCommand {
                 return MessageFormat.format(
                         resources.getString("message.pagination.page.not_found"),
                         page
+                );
+            }
+        }
+    }
+
+    private class MusicRemoveByLink extends CommandItem {
+
+        public MusicRemoveByLink() {
+            super(new ArgumentsTemplate("remove", new StringArgumentMatcher(), new StringArgumentMatcher()));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.music.remove_by_link.args"),
+                    resources.getString("description.command.music.remove_by_link.desc")
+            );
+            return description;
+        }
+
+        @Override
+        public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
+            String playlist = arguments.get(1).getArgument();
+            PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
+            List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
+
+            if (playlistEntities.isEmpty()) {
+                return resources.getString("message.command.music.remove.playlist_not_found");
+            }
+
+            String link = arguments.get(2).getArgument();
+
+            VideoInfo videoInfo = LinkUtils.parseLink(link);
+            MusicLinkEntity entity = new MusicLinkEntity();
+            entity.setIdentifier(videoInfo.getIdentifier());
+            entity.setPlaylist(playlistEntities.get(0));
+            entity.setSource(videoInfo.getSource());
+
+            MusicLinkRepository musicLinkRepository = new MusicLinkRepositoryImpl();
+            if (musicLinkRepository.removeMusicLink(entity) == 0) {
+                return resources.getString("message.command.music.remove.track_not_found");
+            } else {
+                return MessageFormat.format(
+                        resources.getString("message.command.music.remove.successful"),
+                        playlist
                 );
             }
         }

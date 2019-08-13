@@ -8,7 +8,7 @@ import java.util.List;
 public interface MusicLinkRepository {
 
     void addMusicLink(MusicLinkEntity entity);
-    void removeMusicLink(MusicLinkEntity entity);
+    int removeMusicLink(MusicLinkEntity entity);
     void updateMusicLink(MusicLinkEntity entity);
 
     List<MusicLinkEntity> query(HibernateSpecification specification);
