@@ -14,8 +14,12 @@ import ilia.nemankov.togrofbot.commands.parsing.matching.StringArgumentMatcher;
 import ilia.nemankov.togrofbot.database.entity.MusicLinkEntity;
 import ilia.nemankov.togrofbot.database.entity.PlaylistEntity;
 import ilia.nemankov.togrofbot.database.entity.VideoInfo;
+import ilia.nemankov.togrofbot.database.repository.MusicLinkRepository;
 import ilia.nemankov.togrofbot.database.repository.PlaylistRepository;
+import ilia.nemankov.togrofbot.database.repository.QuerySettings;
+import ilia.nemankov.togrofbot.database.repository.impl.MusicLinkRepositoryImpl;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
+import ilia.nemankov.togrofbot.database.specification.impl.MusicLinkSpecificationByPlaylist;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByGuildId;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByNameAndGuildId;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
@@ -57,6 +61,7 @@ public class Playlist extends AbstractCommand {
         commandItems.add(new PlaylistShowFirstPage());
         commandItems.add(new PlaylistShowSpecifiedPage());
         commandItems.add(new PlaylistPlay());
+        commandItems.add(new PlaylistPlayFromTrack());
         setCommandItems(commandItems);
     }
 
@@ -263,6 +268,82 @@ public class Playlist extends AbstractCommand {
                 if (audioManager.isAttemptingToConnect()) {
                     return resources.getString("error.connection.try_to_connect");
                 } else {
+                    if (musicLinkEntities.isEmpty()) {
+                        return resources.getString("message.command.playlist.play.nothing");
+                    }
+                    GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
+                    GuildMusicManager musicManager = provider.getGuildMusicManager(event.getGuild());
+
+                    musicManager.getAudioPlayer().stopTrack();
+                    musicManager.getTrackScheduler().clearAll();
+
+                    audioManager.openAudioConnection(channel);
+
+                    musicManager.getTrackScheduler().setPlaylist(playlist);
+
+                    musicManager.getTrackScheduler().setCommunicationChannel(event.getChannel());
+                    for (MusicLinkEntity musicLinkEntity : musicLinkEntities) {
+                        VideoInfo info = new VideoInfo(musicLinkEntity.getIdentifier(), musicLinkEntity.getSource(), musicLinkEntity.getTitle());
+                        String link;
+                        if ((link = LinkUtils.buildLink(info)) != null) {
+                            provider.getPlayerManager().loadItem(link, new MusicAudioLoader(musicManager.getTrackScheduler()));
+                        }
+                    }
+
+                    return null;
+                }
+            }
+        }
+    }
+
+    private class PlaylistPlayFromTrack extends CommandItem {
+
+        public PlaylistPlayFromTrack() {
+            super(new ArgumentsTemplate("play", new StringArgumentMatcher(), new NumberArgumentMatcher()));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.playlist.play_from_track.args"),
+                    resources.getString("description.command.playlist.play_from_track.desc")
+            );
+            return description;
+        }
+
+        @Override
+        public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
+            VoiceChannel channel = event.getMember().getVoiceState().getChannel();
+            String playlist = arguments.get(1).getArgument();
+            PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
+            List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
+
+            if (playlistEntities.isEmpty()) {
+                return resources.getString("message.command.playlist.not_found");
+            }
+
+            MusicLinkRepository musicLinkRepository = new MusicLinkRepositoryImpl();
+
+            int fromTrack = ((NumberArgument)arguments.get(2)).getNumberArgument().intValue();
+            QuerySettings querySettings = new QuerySettings();
+            querySettings.setFirstResult(fromTrack);
+            List<MusicLinkEntity> musicLinkEntities = musicLinkRepository.query(new MusicLinkSpecificationByPlaylist(playlistEntities.get(0)));
+
+            if (channel == null) {
+                return resources.getString("error.connection.no_chosen_voice_channel");
+            } else if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.VOICE_CONNECT)) {
+                return resources.getString("error.permissions.join_voice_channel");
+            } else {
+                AudioManager audioManager = event.getGuild().getAudioManager();
+                if (audioManager.isAttemptingToConnect()) {
+                    return resources.getString("error.connection.try_to_connect");
+                } else {
+                    if (musicLinkEntities.isEmpty()) {
+                        return resources.getString("message.command.playlist.play.nothing");
+                    }
                     GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
                     GuildMusicManager musicManager = provider.getGuildMusicManager(event.getGuild());
 
