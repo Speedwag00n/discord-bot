@@ -19,18 +19,17 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
 
     @Override
     public void addMusicLink(MusicLinkEntity entity) {
-        Session session = HibernateUtils.getSessionFactory().openSession();
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
         session.save(entity);
 
         transaction.commit();
-        session.close();
     }
 
     @Override
     public int removeMusicLink(MusicLinkEntity entity) {
-        Session session = HibernateUtils.getSessionFactory().openSession();
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
         Query query = session.createQuery("DELETE MusicLinkEntity WHERE identifier = :paramIdentifier and playlist = :paramPlaylist and source = :paramSource");
@@ -41,7 +40,6 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
         int result = query.executeUpdate();
 
         transaction.commit();
-        session.close();
 
         return result;
     }
@@ -53,7 +51,7 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
 
     @Override
     public long count(HibernateSpecification specification, QuerySettings settings) {
-        Session session = HibernateUtils.getSessionFactory().openSession();
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
 
@@ -66,7 +64,6 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
         }
 
         long result = query.getSingleResult();
-        session.close();
         return result;
     }
 
@@ -77,7 +74,7 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
 
     @Override
     public List<MusicLinkEntity> query(HibernateSpecification specification, QuerySettings settings) {
-        Session session = HibernateUtils.getSessionFactory().openSession();
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<MusicLinkEntity> criteria = builder.createQuery(MusicLinkEntity.class);
 
