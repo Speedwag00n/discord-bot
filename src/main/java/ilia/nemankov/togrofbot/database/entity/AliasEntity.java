@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.util.List;
 
 @Entity
-@Table (name = "playlist")
+@Table(name = "alias")
 @Data
 @NoArgsConstructor
 public class AliasEntity {

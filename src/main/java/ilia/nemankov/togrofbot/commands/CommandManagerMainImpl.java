@@ -25,6 +25,7 @@ public class CommandManagerMainImpl implements CommandManager {
         addCommand(new Playlist());
         addCommand(new Skip());
         addCommand(new Music());
+        addCommand(new Alias());
         addCommand(new Summon());
         addCommand(new Leave());
         addCommand(new Play());

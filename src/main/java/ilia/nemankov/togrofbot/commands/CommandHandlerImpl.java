@@ -42,6 +42,9 @@ public class CommandHandlerImpl extends ListenerAdapter implements CommandHandle
         String commandPrefix = SettingsProvider.getInstance().getCommandPrefix();
 
         for (Command command : commands) {
+            if (command instanceof ExecutingCommand) {
+                ((ExecutingCommand)command).subscribe(this);
+            }
             for (String variant : command.getVariants()) {
                 this.commands.put(commandPrefix + variant, command);
             }
