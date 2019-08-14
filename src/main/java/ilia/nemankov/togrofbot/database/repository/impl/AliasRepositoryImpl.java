@@ -20,17 +20,18 @@ public class AliasRepositoryImpl implements AliasRepository {
 
     @Override
     public void addAlias(AliasEntity entity) {
-        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
+        Session session = HibernateUtils.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
 
         session.save(entity);
 
         transaction.commit();
+        session.close();
     }
 
     @Override
     public int removeAlias(AliasEntity entity) {
-        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
+        Session session = HibernateUtils.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
 
         Query query = session.createQuery("DELETE AliasEntity WHERE name = :paramName and guildId = :paramGuildId");
@@ -40,13 +41,14 @@ public class AliasRepositoryImpl implements AliasRepository {
         int deleted = query.executeUpdate();
 
         transaction.commit();
+        session.close();
 
         return deleted;
     }
 
     @Override
     public void updateAlias(AliasEntity entity) {
-        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
+        Session session = HibernateUtils.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
 
         CriteriaBuilder builder = session.getCriteriaBuilder();
@@ -63,6 +65,7 @@ public class AliasRepositoryImpl implements AliasRepository {
         session.update(entity);
 
         transaction.commit();
+        session.close();
     }
 
     @Override
@@ -72,7 +75,7 @@ public class AliasRepositoryImpl implements AliasRepository {
 
     @Override
     public long count(HibernateSpecification specification, QuerySettings settings) {
-        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
+        Session session = HibernateUtils.getSessionFactory().openSession();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
 
@@ -85,6 +88,7 @@ public class AliasRepositoryImpl implements AliasRepository {
         }
 
         long result = query.getSingleResult();
+        session.close();
         return result;
     }
 
@@ -95,7 +99,7 @@ public class AliasRepositoryImpl implements AliasRepository {
 
     @Override
     public List<AliasEntity> query(HibernateSpecification specification, QuerySettings settings) {
-        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
+        Session session = HibernateUtils.getSessionFactory().openSession();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<AliasEntity> criteria = builder.createQuery(AliasEntity.class);
 
@@ -108,6 +112,7 @@ public class AliasRepositoryImpl implements AliasRepository {
         }
 
         List<AliasEntity> result = query.getResultList();
+        session.close();
         return result;
     }
 

@@ -21,6 +21,7 @@ import ilia.nemankov.togrofbot.database.repository.impl.MusicLinkRepositoryImpl;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByNameAndGuildId;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
+import ilia.nemankov.togrofbot.util.HibernateUtils;
 import ilia.nemankov.togrofbot.util.LinkUtils;
 import ilia.nemankov.togrofbot.util.pagination.PageNotFoundException;
 import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
@@ -123,6 +124,7 @@ public class Music extends AbstractCommand {
                 if (e.getCause() instanceof ConstraintViolationException) {
                     return resources.getString("message.command.music.add.exists");
                 } else {
+                    logger.error("Failed to add track", e);
                     return resources.getString("error.command.music.add.failed");
                 }
             }
@@ -152,8 +154,8 @@ public class Music extends AbstractCommand {
             String playlist = arguments.get(1).getArgument();
 
             PlaylistRepository repository = new PlaylistRepositoryImpl();
+            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
             List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
-
             if (entities.isEmpty()) {
                 return resources.getString("message.command.playlist.not_found");
             }
@@ -167,6 +169,7 @@ public class Music extends AbstractCommand {
                     .parallelStream()
                     .map(entity -> new DefaultIndexedRow(entity.getTitle()))
                     .collect(Collectors.toList());
+            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
             try {
                 return PaginationUtils.buildPage(1, new DefaultHeader(), titles, null).toString();
             } catch (PageNotFoundException e) {
@@ -200,9 +203,10 @@ public class Music extends AbstractCommand {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
             String playlist = arguments.get(1).getArgument();
-            PlaylistRepository repository = new PlaylistRepositoryImpl();
-            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
 
+            PlaylistRepository repository = new PlaylistRepositoryImpl();
+            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
+            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
             if (entities.isEmpty()) {
                 return resources.getString("message.command.playlist.not_found");
             }
@@ -216,6 +220,7 @@ public class Music extends AbstractCommand {
                     .parallelStream()
                     .map(entity -> new DefaultIndexedRow(entity.getTitle()))
                     .collect(Collectors.toList());
+            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
             int page = ((NumberArgument)arguments.get(2)).getNumberArgument().intValue();
             try {
                 return PaginationUtils.buildPage(page, new DefaultHeader(), titles, null).toString();

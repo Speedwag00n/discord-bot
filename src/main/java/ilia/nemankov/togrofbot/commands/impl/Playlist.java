@@ -105,6 +105,7 @@ public class Playlist extends AbstractCommand {
                 if (e instanceof ConstraintViolationException) {
                     return resources.getString("message.command.playlist.create.exists");
                 } else {
+                    logger.error("Failed to create playlist", e);
                     return resources.getString("message.command.playlist.create.failed");
                 }
             }
@@ -410,6 +411,7 @@ public class Playlist extends AbstractCommand {
                 if (e.getCause() instanceof ConstraintViolationException) {
                     return resources.getString("message.command.playlist.update.exists");
                 } else {
+                    logger.error("Failed to update playlist", e);
                     return resources.getString("message.command.playlist.update.failed");
                 }
             }
