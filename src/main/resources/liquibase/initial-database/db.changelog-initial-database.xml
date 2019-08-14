@@ -17,4 +17,6 @@
 
     <include file="liquibase/initial-database/create-table/db.changelog.add-unique-constraint-playlist-table.xml"/>
 
+    <include file="liquibase/initial-database/create-table/db.changelog.create-table-alias.xml"/>
+
 </databaseChangeLog>
