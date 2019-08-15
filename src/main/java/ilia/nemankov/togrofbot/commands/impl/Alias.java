@@ -42,6 +42,7 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
         List<CommandItem> commandItems = new ArrayList<>();
         commandItems.add(new AliasAdd());
         commandItems.add(new AliasExecute());
+        commandItems.add(new AliasRemoveByName());
         setCommandItems(commandItems);
     }
 
@@ -143,6 +144,44 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
             } else {
                 logger.error("Failed to execute alias");
                 return resources.getString("message.command.alias.execute.failed");
+            }
+        }
+    }
+
+    private class AliasRemoveByName extends CommandItem {
+
+        public AliasRemoveByName() {
+            super(new ArgumentsTemplate("remove", new StringArgumentMatcher()));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.alias.remove.args"),
+                    resources.getString("description.command.alias.remove.argsdescription.command.alias.remove.desc")
+            );
+            return description;
+        }
+
+        @Override
+        public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
+            String name = arguments.get(1).getArgument();
+
+            AliasEntity entity = new AliasEntity();
+            entity.setName(name);
+            entity.setGuildId(event.getGuild().getIdLong());
+
+            AliasRepositoryImpl repository = new AliasRepositoryImpl();
+            if (repository.removeAlias(entity) == 0) {
+                return resources.getString("message.command.alias.not_found");
+            } else {
+                return MessageFormat.format(
+                        resources.getString("message.command.alias.remove.successful"),
+                        name
+                );
             }
         }
     }

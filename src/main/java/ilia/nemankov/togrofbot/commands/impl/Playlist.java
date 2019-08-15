@@ -24,6 +24,7 @@ import ilia.nemankov.togrofbot.database.specification.impl.MusicLinkSpecificatio
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByGuildId;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByNameAndGuildId;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
+import ilia.nemankov.togrofbot.util.HibernateUtils;
 import ilia.nemankov.togrofbot.util.LinkUtils;
 import ilia.nemankov.togrofbot.util.pagination.PageNotFoundException;
 import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
@@ -171,7 +172,9 @@ public class Playlist extends AbstractCommand {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
             PlaylistRepository repository = new PlaylistRepositoryImpl();
+            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
             List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByGuildId(event.getGuild().getIdLong()));
+            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
             List<Row> playlists = entities
                     .parallelStream()
                     .map(entity -> new MarkedRow(entity.getName()))
@@ -212,7 +215,9 @@ public class Playlist extends AbstractCommand {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
             PlaylistRepository repository = new PlaylistRepositoryImpl();
+            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
             List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByGuildId(event.getGuild().getIdLong()));
+            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
             List<Row> playlists = entities
                     .parallelStream()
                     .map(entity -> new MarkedRow(entity.getName()))
@@ -255,8 +260,9 @@ public class Playlist extends AbstractCommand {
             VoiceChannel channel = event.getMember().getVoiceState().getChannel();
             String playlist = arguments.get(1).getArgument();
             PlaylistRepository repository = new PlaylistRepositoryImpl();
+            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
             List<PlaylistEntity> playlistEntities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
-
+            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
             if (playlistEntities.isEmpty()) {
                 return resources.getString("message.command.playlist.not_found");
             }
@@ -322,8 +328,9 @@ public class Playlist extends AbstractCommand {
             VoiceChannel channel = event.getMember().getVoiceState().getChannel();
             String playlist = arguments.get(1).getArgument();
             PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
+            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
             List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
-
+            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
             if (playlistEntities.isEmpty()) {
                 return resources.getString("message.command.playlist.not_found");
             }
@@ -396,8 +403,9 @@ public class Playlist extends AbstractCommand {
             String newName = arguments.get(2).getArgument();
 
             PlaylistRepository repository = new PlaylistRepositoryImpl();
+            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
             List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(oldName, event.getGuild().getIdLong()));
-
+            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
             if (entities.isEmpty()) {
                 return resources.getString("message.command.playlist.update.not_found");
             }

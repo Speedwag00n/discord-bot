@@ -87,8 +87,9 @@ public class Music extends AbstractCommand {
                 VideoInfo videoInfo = LinkUtils.parseLink(link);
                 if (videoInfo != null) {
                     PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
+                    HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
                     List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
-
+                    HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
                     if (!playlistEntities.isEmpty()) {
                         MusicLinkEntity entity = new MusicLinkEntity();
                         entity.setPlaylist(playlistEntities.get(0));
@@ -255,8 +256,9 @@ public class Music extends AbstractCommand {
 
             String playlist = arguments.get(1).getArgument();
             PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
+            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
             List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
-
+            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
             if (playlistEntities.isEmpty()) {
                 return resources.getString("message.command.music.remove.playlist_not_found");
             }
@@ -307,12 +309,11 @@ public class Music extends AbstractCommand {
 
             String playlist = arguments.get(1).getArgument();
             PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
+            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
             List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
-
             if (playlistEntities.isEmpty()) {
                 return resources.getString("message.command.music.remove.playlist_not_found");
             }
-
             int index = ((NumberArgument)arguments.get(2)).getNumberArgument().intValue();
             if (index <= 0) {
                 return resources.getString("message.command.music.remove.incorrect_index");
@@ -331,6 +332,8 @@ public class Music extends AbstractCommand {
                 }
             } catch (IndexOutOfBoundsException e) {
                 return resources.getString("message.command.music.remove.track_not_found");
+            } finally {
+                HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
             }
         }
     }
