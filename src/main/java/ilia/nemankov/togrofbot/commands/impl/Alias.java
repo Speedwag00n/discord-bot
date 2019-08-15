@@ -226,7 +226,7 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
             List<AliasEntity> entities = repository.query(new AliasSpecificationByGuildId(event.getGuild().getIdLong()));
             List<Row> aliases = entities
                     .parallelStream()
-                    .map(entity -> new MarkedRow(entity.getName()))
+                    .map(entity -> new MarkedRow(buildContent(entity.getName(), entity.getCommand())))
                     .collect(Collectors.toList());
             if (aliases.isEmpty()) {
                 return resources.getString("message.command.alias.show.empty");
@@ -267,7 +267,7 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
             List<AliasEntity> entities = repository.query(new AliasSpecificationByGuildId(event.getGuild().getIdLong()));
             List<Row> aliases = entities
                     .parallelStream()
-                    .map(entity -> new MarkedRow(entity.getName()))
+                    .map(entity -> new MarkedRow(buildContent(entity.getName(), entity.getCommand())))
                     .collect(Collectors.toList());
             if (aliases.isEmpty()) {
                 return resources.getString("message.command.alias.show.empty");
@@ -292,6 +292,11 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
             }
         }
         return true;
+    }
+
+    private String buildContent(String commandName, String commandRequest) {
+        String content = "\"" + commandName + "\": " + "\"" + commandRequest + "\"";
+        return content;
     }
 
 }
