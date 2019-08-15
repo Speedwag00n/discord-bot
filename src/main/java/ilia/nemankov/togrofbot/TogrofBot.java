@@ -1,6 +1,5 @@
 package ilia.nemankov.togrofbot;
 
-import ilia.nemankov.togrofbot.audio.GuildMusicManagerProvider;
 import ilia.nemankov.togrofbot.commands.*;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
@@ -10,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
 import java.util.List;
-import java.util.Map;
 
 public class TogrofBot {
 

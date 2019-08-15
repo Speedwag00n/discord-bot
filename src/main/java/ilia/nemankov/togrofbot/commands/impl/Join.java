@@ -71,8 +71,7 @@ public class Join extends AbstractCommand {
                     GuildMusicManager musicManager = provider.getGuildMusicManager(event.getGuild());
 
                     audioManager.openAudioConnection(channel);
-
-                    provider.getPlayerManager().loadItem("src/main/resources/audio/greeting.mp3", new EmotionAudioLoader(musicManager.getTrackScheduler()));
+                    provider.getPlayerManager().loadItem("https://vimeo.com/354064901", new EmotionAudioLoader(musicManager.getTrackScheduler()));
 
                     return resources.getString("message.command.join.greeting");
                 }

@@ -3,9 +3,8 @@ package ilia.nemankov.togrofbot.settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -21,10 +20,10 @@ public class SettingsProvider {
 
         try {
             properties = new Properties();
-            FileInputStream inputStream = new FileInputStream("src/main/resources/settings.properties");
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("settings.properties");
 
             properties.load(inputStream);
-        } catch (FileNotFoundException e) {
+        } catch (NullPointerException e) {
             logger.error("File settings.properties not found", e);
         } catch (IOException e) {
             logger.error("Appeared an error during reading settings.properties file", e);
