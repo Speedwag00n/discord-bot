@@ -5,13 +5,21 @@ import ilia.nemankov.togrofbot.commands.CommandItem;
 import ilia.nemankov.togrofbot.commands.ExecutingCommand;
 import ilia.nemankov.togrofbot.commands.parsing.CommandVariantDescription;
 import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
+import ilia.nemankov.togrofbot.commands.parsing.argument.NumberArgument;
 import ilia.nemankov.togrofbot.commands.parsing.matching.ArgumentsTemplate;
+import ilia.nemankov.togrofbot.commands.parsing.matching.NumberArgumentMatcher;
 import ilia.nemankov.togrofbot.commands.parsing.matching.StringArgumentMatcher;
 import ilia.nemankov.togrofbot.database.entity.AliasEntity;
 import ilia.nemankov.togrofbot.database.repository.AliasRepository;
 import ilia.nemankov.togrofbot.database.repository.impl.AliasRepositoryImpl;
+import ilia.nemankov.togrofbot.database.specification.impl.AliasSpecificationByGuildId;
 import ilia.nemankov.togrofbot.database.specification.impl.AliasSpecificationByNameAndGuildId;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
+import ilia.nemankov.togrofbot.util.pagination.PageNotFoundException;
+import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
+import ilia.nemankov.togrofbot.util.pagination.header.impl.DefaultHeader;
+import ilia.nemankov.togrofbot.util.pagination.row.Row;
+import ilia.nemankov.togrofbot.util.pagination.row.impl.MarkedRow;
 import net.dv8tion.jda.core.entities.impl.AbstractMessage;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -24,6 +32,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class Alias extends AbstractCommand implements ExecutingCommand {
 
@@ -41,8 +50,10 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
     public Alias() {
         List<CommandItem> commandItems = new ArrayList<>();
         commandItems.add(new AliasAdd());
-        commandItems.add(new AliasExecute());
         commandItems.add(new AliasRemoveByName());
+        commandItems.add(new AliasShowFirstPage());
+        commandItems.add(new AliasShowSpecifiedPage());
+        commandItems.add(new AliasExecute());
         setCommandItems(commandItems);
     }
 
@@ -73,11 +84,16 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
 
             String name = arguments.get(1).getArgument();
             String command = arguments.get(2).getArgument();
+            for (CommandItem item : getCommandItems()) {
+                if (item.getArgumentsTemplate().getDeterminant().equals(name)) {
+                    return resources.getString("message.command.alias.add.invalid_name");
+                }
+            }
             if (command.startsWith(SettingsProvider.getInstance().getCommandPrefix())) {
                 command = command.substring(1);
             }
             if (!canBeAliased(command)) {
-                return resources.getString("message.command.alias.add.invalid_command");
+                return resources.getString("message.command.alias.add.invalid_name");
             }
             try {
                 AliasEntity entity = new AliasEntity();
@@ -159,7 +175,7 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
             CommandVariantDescription description = new CommandVariantDescription(
                     resources.getString("description.command.alias.remove.args"),
-                    resources.getString("description.command.alias.remove.argsdescription.command.alias.remove.desc")
+                    resources.getString("description.command.alias.remove.desc")
             );
             return description;
         }
@@ -181,6 +197,89 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
                 return MessageFormat.format(
                         resources.getString("message.command.alias.remove.successful"),
                         name
+                );
+            }
+        }
+    }
+
+    private class AliasShowFirstPage extends CommandItem {
+
+        public AliasShowFirstPage() {
+            super(new ArgumentsTemplate("show"));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.alias.show_first_page.args"),
+                    resources.getString("description.command.alias.show_first_page.desc")
+            );
+            return description;
+        }
+
+        @Override
+        public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
+            AliasRepository repository = new AliasRepositoryImpl();
+            List<AliasEntity> entities = repository.query(new AliasSpecificationByGuildId(event.getGuild().getIdLong()));
+            List<Row> aliases = entities
+                    .parallelStream()
+                    .map(entity -> new MarkedRow(entity.getName()))
+                    .collect(Collectors.toList());
+            if (aliases.isEmpty()) {
+                return resources.getString("message.command.alias.show.empty");
+            }
+            try {
+                return PaginationUtils.buildPage(1, new DefaultHeader(), aliases, null).toString();
+            } catch (PageNotFoundException e) {
+                logger.error("Error caused by building first page for command {}", this.getClass().getSimpleName(), e);
+                return MessageFormat.format(
+                        resources.getString("message.command.playlist.alias.failed"),
+                        1
+                );
+            }
+        }
+    }
+
+    private class AliasShowSpecifiedPage extends CommandItem {
+
+        public AliasShowSpecifiedPage() {
+            super(new ArgumentsTemplate("show", new NumberArgumentMatcher()));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.alias.show_specified_page.args"),
+                    resources.getString("description.command.alias.show_specified_page.desc")
+            );
+            return description;
+        }
+
+        @Override
+        public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
+            AliasRepository repository = new AliasRepositoryImpl();
+            List<AliasEntity> entities = repository.query(new AliasSpecificationByGuildId(event.getGuild().getIdLong()));
+            List<Row> aliases = entities
+                    .parallelStream()
+                    .map(entity -> new MarkedRow(entity.getName()))
+                    .collect(Collectors.toList());
+            if (aliases.isEmpty()) {
+                return resources.getString("message.command.alias.show.empty");
+            }
+            int page = ((NumberArgument)arguments.get(1)).getNumberArgument().intValue();
+            try {
+                return PaginationUtils.buildPage(page, new DefaultHeader(), aliases, null).toString();
+            } catch (PageNotFoundException e) {
+                logger.error("Error caused by building first page for command {}", this.getClass().getSimpleName(), e);
+                return MessageFormat.format(
+                        resources.getString("message.command.playlist.alias.failed"),
+                        1
                 );
             }
         }

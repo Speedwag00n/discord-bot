@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -32,6 +33,10 @@ public abstract class AbstractCommand implements Command {
         } else {
             return null;
         }
+    }
+
+    public List<CommandItem> getCommandItems() {
+        return Collections.unmodifiableList(commandItems);
     }
 
     @Override
