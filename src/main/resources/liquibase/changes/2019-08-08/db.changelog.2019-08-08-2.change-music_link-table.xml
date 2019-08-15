@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="change-music_link-table" author="IliaNemankov" runOnChange="true">
+        <dropColumn
+                tableName="music_link"
+                columnName="link"
+        />
+
+        <addColumn tableName="music_link">
+            <column name="identifier" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="music_link">
+            <column name="source" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addPrimaryKey
+                columnNames="playlist_id, identifier, source"
+                constraintName="primary_key-music_link"
+                tableName="music_link"
+        />
+
+
+        <rollback>
+            <dropColumn
+                    tableName="music_link"
+                    columnName="identifier"
+            />
+            <dropColumn
+                    tableName="music_link"
+                    columnName="source"
+            />
+
+            <addColumn tableName="music_link">
+                <column name="link" type="VARCHAR(255)">
+                    <constraints nullable="false"/>
+                </column>
+            </addColumn>
+
+            <addPrimaryKey
+                    columnNames="playlist_id, link"
+                    constraintName="primary_key-music_link"
+                    tableName="music_link"
+            />
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

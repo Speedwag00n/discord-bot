@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="create-music_link-table" author="IliaNemankov" runOnChange="true">
+        <createTable tableName="music_link">
+            <column name="playlist_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="link" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey
+                columnNames="playlist_id, link"
+                constraintName="primary_key-music_link"
+                tableName="music_link"
+        />
+
+        <addForeignKeyConstraint
+                baseTableName="music_link"
+                baseColumnNames="playlist_id"
+                constraintName="foreign_key-music_link-playlist"
+                referencedTableName="playlist"
+                referencedColumnNames="playlist_id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>
