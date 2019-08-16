@@ -80,9 +80,9 @@
                 <configuration>
                     <changeLogFile>src/main/resources/liquibase/db.changelog-master.xml</changeLogFile>
                     <driver>org.postgresql.Driver</driver>
-                    <url>jdbc:postgresql://localhost:5432/togrof_bot</url>
-                    <username>test</username>
-                    <password>123</password>
+                    <url>${env.JDBC_DATABASE_URL}</url>
+                    <username>${env.JDBC_DATABASE_USERNAME}</username>
+                    <password>${env.JDBC_DATABASE_PASSWORD}</password>
                 </configuration>
                 <executions>
                     <execution>

@@ -27,7 +27,27 @@ public class HibernateUtils {
                 configuration.addAnnotatedClass(MusicLinkEntity.class);
                 configuration.addAnnotatedClass(AliasEntity.class);
 
-                StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties());
+                final String JDBC_DATABASE_URL = System.getenv("JDBC_DATABASE_URL");
+                if (JDBC_DATABASE_URL == null) {
+                    logger.error("Can not find system variable for JDBC database URL");
+                    System.exit(0);
+                }
+                final String JDBC_DATABASE_USERNAME = System.getenv("JDBC_DATABASE_USERNAME");
+                if (JDBC_DATABASE_URL == null) {
+                    logger.error("Can not find system variable for JDBC database username");
+                    System.exit(0);
+                }
+                final String JDBC_DATABASE_PASSWORD = System.getenv("JDBC_DATABASE_PASSWORD");
+                if (JDBC_DATABASE_URL == null) {
+                    logger.error("Can not find system variable for JDBC database password");
+                    System.exit(0);
+                }
+
+                StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder()
+                        .applySettings(configuration.getProperties())
+                        .applySetting("hibernate.connection.url", JDBC_DATABASE_URL)
+                        .applySetting("hibernate.connection.username", JDBC_DATABASE_USERNAME)
+                        .applySetting("hibernate.connection.password", JDBC_DATABASE_PASSWORD);
                 instance = configuration.buildSessionFactory(builder.build());
                 logger.debug("Created {} class instance", SessionFactory.class.getSimpleName());
             } catch (Exception e) {
