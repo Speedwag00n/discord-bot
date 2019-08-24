@@ -7,20 +7,18 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EmotionAudioLoader implements AudioLoadResultHandler {
+public class EmotionAudioLoader extends AbstractAudioLoader implements AudioLoadResultHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(EmotionAudioLoader.class);
 
-    private Scheduler scheduler;
-
     public EmotionAudioLoader(Scheduler scheduler) {
-        this.scheduler = scheduler;
+        super(scheduler);
     }
 
     @Override
     public void trackLoaded(AudioTrack track) {
-        if (scheduler.isEmpty() && (scheduler.getPlayingNow() == null)) {
-            scheduler.queue(track);
+        if (getScheduler().isEmpty() && (getScheduler().getPlayingNow() == null)) {
+            getScheduler().queue(track);
             logger.debug("Started playing emotion \"{}\"", track.getIdentifier());
         } else {
             logger.debug("Scheduler queue isn't empty, could not play emotion \"{}\"", track.getIdentifier());
@@ -30,7 +28,7 @@ public class EmotionAudioLoader implements AudioLoadResultHandler {
     @Override
     public void playlistLoaded(AudioPlaylist playlist) {
         for (AudioTrack track : playlist.getTracks()) {
-            scheduler.queue(track);
+            getScheduler().queue(track);
         }
     }
 

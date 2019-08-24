@@ -1,5 +1,6 @@
 package ilia.nemankov.togrofbot.commands.impl;
 
+import ilia.nemankov.togrofbot.audio.AudioLoaderInfo;
 import ilia.nemankov.togrofbot.audio.GuildMusicManager;
 import ilia.nemankov.togrofbot.audio.GuildMusicManagerProvider;
 import ilia.nemankov.togrofbot.audio.MusicAudioLoader;
@@ -26,6 +27,7 @@ import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecification
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import ilia.nemankov.togrofbot.util.HibernateUtils;
 import ilia.nemankov.togrofbot.util.LinkUtils;
+import ilia.nemankov.togrofbot.util.VoiceUtils;
 import ilia.nemankov.togrofbot.util.pagination.PageNotFoundException;
 import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
 import ilia.nemankov.togrofbot.util.pagination.header.impl.DefaultHeader;
@@ -257,7 +259,6 @@ public class Playlist extends AbstractCommand {
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
-            VoiceChannel channel = event.getMember().getVoiceState().getChannel();
             String playlist = arguments.get(1).getArgument();
             PlaylistRepository repository = new PlaylistRepositoryImpl();
             HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
@@ -268,40 +269,25 @@ public class Playlist extends AbstractCommand {
             }
             List<MusicLinkEntity> musicLinkEntities = playlistEntities.get(0).getLinks();
 
-            if (channel == null) {
-                return resources.getString("error.connection.no_chosen_voice_channel");
-            } else if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.VOICE_CONNECT)) {
-                return resources.getString("error.permissions.join_voice_channel");
-            } else {
-                AudioManager audioManager = event.getGuild().getAudioManager();
-                if (audioManager.isAttemptingToConnect()) {
-                    return resources.getString("error.connection.try_to_connect");
-                } else {
-                    if (musicLinkEntities.isEmpty()) {
-                        return resources.getString("message.command.playlist.play.nothing");
-                    }
-                    GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
-                    GuildMusicManager musicManager = provider.getGuildMusicManager(event.getGuild());
-
-                    musicManager.getAudioPlayer().stopTrack();
-                    musicManager.getTrackScheduler().clearAll();
-
-                    audioManager.openAudioConnection(channel);
-
-                    musicManager.getTrackScheduler().setPlaylist(playlist);
-
-                    musicManager.getTrackScheduler().setCommunicationChannel(event.getChannel());
-                    for (MusicLinkEntity musicLinkEntity : musicLinkEntities) {
-                        VideoInfo info = new VideoInfo(musicLinkEntity.getIdentifier(), musicLinkEntity.getSource(), musicLinkEntity.getTitle());
-                        String link;
-                        if ((link = LinkUtils.buildLink(info)) != null) {
-                            provider.getPlayerManager().loadItem(link, new MusicAudioLoader(musicManager.getTrackScheduler()));
-                        }
-                    }
-
-                    return null;
+            List<String> links = new ArrayList<>();
+            for (MusicLinkEntity musicLinkEntity : musicLinkEntities) {
+                VideoInfo info = new VideoInfo(musicLinkEntity.getIdentifier(), musicLinkEntity.getSource(), musicLinkEntity.getTitle());
+                String link;
+                if ((link = LinkUtils.buildLink(info)) != null) {
+                    links.add(link);
                 }
             }
+
+            AudioLoaderInfo info = new AudioLoaderInfo();
+
+            info.setVoiceChannel(event.getMember().getVoiceState().getChannel());
+            info.setGuild(event.getGuild());
+            info.setCommunicationChannel(event.getMessage().getTextChannel());
+            info.setLinks(links);
+
+            String result = VoiceUtils.playMusic(info, false);
+            VoiceUtils.setPlayingPlaylist(event.getGuild(), playlist);
+            return result;
         }
     }
 
@@ -325,7 +311,6 @@ public class Playlist extends AbstractCommand {
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
-            VoiceChannel channel = event.getMember().getVoiceState().getChannel();
             String playlist = arguments.get(1).getArgument();
             PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
             HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
@@ -342,40 +327,25 @@ public class Playlist extends AbstractCommand {
             querySettings.setFirstResult(fromTrack);
             List<MusicLinkEntity> musicLinkEntities = musicLinkRepository.query(new MusicLinkSpecificationByPlaylist(playlistEntities.get(0)));
 
-            if (channel == null) {
-                return resources.getString("error.connection.no_chosen_voice_channel");
-            } else if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.VOICE_CONNECT)) {
-                return resources.getString("error.permissions.join_voice_channel");
-            } else {
-                AudioManager audioManager = event.getGuild().getAudioManager();
-                if (audioManager.isAttemptingToConnect()) {
-                    return resources.getString("error.connection.try_to_connect");
-                } else {
-                    if (musicLinkEntities.isEmpty()) {
-                        return resources.getString("message.command.playlist.play.nothing");
-                    }
-                    GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
-                    GuildMusicManager musicManager = provider.getGuildMusicManager(event.getGuild());
-
-                    musicManager.getAudioPlayer().stopTrack();
-                    musicManager.getTrackScheduler().clearAll();
-
-                    audioManager.openAudioConnection(channel);
-
-                    musicManager.getTrackScheduler().setPlaylist(playlist);
-
-                    musicManager.getTrackScheduler().setCommunicationChannel(event.getChannel());
-                    for (MusicLinkEntity musicLinkEntity : musicLinkEntities) {
-                        VideoInfo info = new VideoInfo(musicLinkEntity.getIdentifier(), musicLinkEntity.getSource(), musicLinkEntity.getTitle());
-                        String link;
-                        if ((link = LinkUtils.buildLink(info)) != null) {
-                            provider.getPlayerManager().loadItem(link, new MusicAudioLoader(musicManager.getTrackScheduler()));
-                        }
-                    }
-
-                    return null;
+            List<String> links = new ArrayList<>();
+            for (MusicLinkEntity musicLinkEntity : musicLinkEntities) {
+                VideoInfo info = new VideoInfo(musicLinkEntity.getIdentifier(), musicLinkEntity.getSource(), musicLinkEntity.getTitle());
+                String link;
+                if ((link = LinkUtils.buildLink(info)) != null) {
+                    links.add(link);
                 }
             }
+
+            AudioLoaderInfo info = new AudioLoaderInfo();
+
+            info.setVoiceChannel(event.getMember().getVoiceState().getChannel());
+            info.setGuild(event.getGuild());
+            info.setCommunicationChannel(event.getMessage().getTextChannel());
+            info.setLinks(links);
+
+            String result = VoiceUtils.playMusic(info, false);
+            VoiceUtils.setPlayingPlaylist(event.getGuild(), playlist);
+            return result;
         }
     }
 
