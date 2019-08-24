@@ -21,7 +21,6 @@ import ilia.nemankov.togrofbot.database.repository.impl.MusicLinkRepositoryImpl;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByNameAndGuildId;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
-import ilia.nemankov.togrofbot.util.HibernateUtils;
 import ilia.nemankov.togrofbot.util.LinkUtils;
 import ilia.nemankov.togrofbot.util.pagination.PageNotFoundException;
 import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
@@ -87,9 +86,7 @@ public class Music extends AbstractCommand {
                 VideoInfo videoInfo = LinkUtils.parseLink(link);
                 if (videoInfo != null) {
                     PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
-                    HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
-                    List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
-                    HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
+                    List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()), "playlist-entity.without-links");
                     if (!playlistEntities.isEmpty()) {
                         MusicLinkEntity entity = new MusicLinkEntity();
                         entity.setPlaylist(playlistEntities.get(0));
@@ -155,8 +152,7 @@ public class Music extends AbstractCommand {
             String playlist = arguments.get(1).getArgument();
 
             PlaylistRepository repository = new PlaylistRepositoryImpl();
-            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
-            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
+            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()), "playlist-entity.with-links");
             if (entities.isEmpty()) {
                 return resources.getString("message.command.playlist.not_found");
             }
@@ -170,7 +166,6 @@ public class Music extends AbstractCommand {
                     .parallelStream()
                     .map(entity -> new DefaultIndexedRow(entity.getTitle()))
                     .collect(Collectors.toList());
-            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
             try {
                 return PaginationUtils.buildPage(1, new DefaultHeader(), titles, null).toString();
             } catch (PageNotFoundException e) {
@@ -206,8 +201,7 @@ public class Music extends AbstractCommand {
             String playlist = arguments.get(1).getArgument();
 
             PlaylistRepository repository = new PlaylistRepositoryImpl();
-            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
-            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
+            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()), "playlist-entity.with-links");
             if (entities.isEmpty()) {
                 return resources.getString("message.command.playlist.not_found");
             }
@@ -221,7 +215,6 @@ public class Music extends AbstractCommand {
                     .parallelStream()
                     .map(entity -> new DefaultIndexedRow(entity.getTitle()))
                     .collect(Collectors.toList());
-            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
             int page = ((NumberArgument)arguments.get(2)).getNumberArgument().intValue();
             try {
                 return PaginationUtils.buildPage(page, new DefaultHeader(), titles, null).toString();
@@ -256,9 +249,7 @@ public class Music extends AbstractCommand {
 
             String playlist = arguments.get(1).getArgument();
             PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
-            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
-            List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
-            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
+            List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()), "playlist-entity.without-links");
             if (playlistEntities.isEmpty()) {
                 return resources.getString("message.command.music.remove.playlist_not_found");
             }
@@ -309,8 +300,7 @@ public class Music extends AbstractCommand {
 
             String playlist = arguments.get(1).getArgument();
             PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
-            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
-            List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
+            List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()), "playlist-entity.with-links");
             if (playlistEntities.isEmpty()) {
                 return resources.getString("message.command.music.remove.playlist_not_found");
             }
@@ -332,8 +322,6 @@ public class Music extends AbstractCommand {
                 }
             } catch (IndexOutOfBoundsException e) {
                 return resources.getString("message.command.music.remove.track_not_found");
-            } finally {
-                HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
             }
         }
     }

@@ -6,6 +6,38 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.util.List;
 
+@NamedEntityGraphs(
+    {
+        @NamedEntityGraph(
+            name = "playlist-entity.without-links",
+            attributeNodes = {
+                @NamedAttributeNode("id"),
+                @NamedAttributeNode("name"),
+                @NamedAttributeNode("guildId")
+            }
+        ),
+        @NamedEntityGraph(
+            name = "playlist-entity.with-links",
+            attributeNodes = {
+                @NamedAttributeNode("id"),
+                @NamedAttributeNode("name"),
+                @NamedAttributeNode("guildId"),
+                @NamedAttributeNode(value = "links", subgraph = "links-subgraph")
+            },
+            subgraphs = {
+                @NamedSubgraph(
+                    name = "links-subgraph",
+                    attributeNodes = {
+                        @NamedAttributeNode("identifier"),
+                        @NamedAttributeNode("source"),
+                        @NamedAttributeNode("title"),
+                        @NamedAttributeNode("creationDatetime")
+                    }
+                )
+            }
+        )
+    }
+)
 @Entity
 @Table (name = "playlist")
 @Data

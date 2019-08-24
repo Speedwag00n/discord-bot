@@ -20,18 +20,17 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     public void addPlaylist(PlaylistEntity entity) {
-        Session session = HibernateUtils.getSessionFactory().openSession();
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
         session.save(entity);
 
         transaction.commit();
-        session.close();
     }
 
     @Override
     public int removePlaylist(PlaylistEntity entity) {
-        Session session = HibernateUtils.getSessionFactory().openSession();
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
         Query query = session.createQuery("DELETE PlaylistEntity WHERE name = :paramName and guildId = :paramGuildId");
@@ -41,14 +40,13 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
         int deleted = query.executeUpdate();
 
         transaction.commit();
-        session.close();
 
         return deleted;
     }
 
     @Override
     public void updatePlaylist(PlaylistEntity entity) {
-        Session session = HibernateUtils.getSessionFactory().openSession();
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
         CriteriaBuilder builder = session.getCriteriaBuilder();
@@ -60,7 +58,6 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
         session.update(entity);
 
         transaction.commit();
-        session.close();
     }
 
     @Override
@@ -70,7 +67,9 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     public long count(HibernateSpecification specification, QuerySettings settings) {
-        Session session = HibernateUtils.getSessionFactory().openSession();
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
 
@@ -81,21 +80,22 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
         if (settings != null) {
             HibernateUtils.applySettings(query, settings);
         }
-
         long result = query.getSingleResult();
-        session.close();
 
+        transaction.commit();
         return result;
     }
 
     @Override
-    public List<PlaylistEntity> query(HibernateSpecification specification) {
-        return this.query(specification, null);
+    public List<PlaylistEntity> query(HibernateSpecification specification, String graphName) {
+        return this.query(specification, graphName, null);
     }
 
     @Override
-    public List<PlaylistEntity> query(HibernateSpecification specification, QuerySettings settings) {
+    public List<PlaylistEntity> query(HibernateSpecification specification, String graphName, QuerySettings settings) {
         Session session = HibernateUtils.getSessionFactory().getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<PlaylistEntity> criteria = builder.createQuery(PlaylistEntity.class);
 
@@ -103,11 +103,13 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
         criteria.select(root).where(specification.getPredicate(builder, root));
 
         TypedQuery<PlaylistEntity> query = session.createQuery(criteria);
+        query.setHint("javax.persistence.fetchgraph", session.getEntityGraph(graphName));
         if (settings != null) {
             HibernateUtils.applySettings(query, settings);
         }
-
         List<PlaylistEntity> result = query.getResultList();
+
+        transaction.commit();
         return result;
     }
 

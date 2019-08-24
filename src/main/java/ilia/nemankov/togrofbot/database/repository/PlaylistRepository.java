@@ -14,7 +14,7 @@ public interface PlaylistRepository {
     long count(HibernateSpecification specification);
     long count(HibernateSpecification specification, QuerySettings settings);
 
-    List<PlaylistEntity> query(HibernateSpecification specification);
-    List<PlaylistEntity> query(HibernateSpecification specification, QuerySettings settings);
+    List<PlaylistEntity> query(HibernateSpecification specification, String graphName);
+    List<PlaylistEntity> query(HibernateSpecification specification, String graphName, QuerySettings settings);
 
 }

@@ -19,18 +19,17 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
 
     @Override
     public void addMusicLink(MusicLinkEntity entity) {
-        Session session = HibernateUtils.getSessionFactory().openSession();
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
         session.save(entity);
 
         transaction.commit();
-        session.close();
     }
 
     @Override
     public int removeMusicLink(MusicLinkEntity entity) {
-        Session session = HibernateUtils.getSessionFactory().openSession();
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
         Query query = session.createQuery("DELETE MusicLinkEntity WHERE identifier = :paramIdentifier and playlist = :paramPlaylist and source = :paramSource");
@@ -41,7 +40,6 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
         int result = query.executeUpdate();
 
         transaction.commit();
-        session.close();
 
         return result;
     }
@@ -53,7 +51,9 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
 
     @Override
     public long count(HibernateSpecification specification, QuerySettings settings) {
-        Session session = HibernateUtils.getSessionFactory().openSession();
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
 
@@ -64,20 +64,22 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
         if (settings != null) {
             HibernateUtils.applySettings(query, settings);
         }
-
         long result = query.getSingleResult();
-        session.close();
+
+        transaction.commit();
         return result;
     }
 
     @Override
-    public List<MusicLinkEntity> query(HibernateSpecification specification) {
-        return this.query(specification, null);
+    public List<MusicLinkEntity> query(HibernateSpecification specification, String graphName) {
+        return this.query(specification, graphName, null);
     }
 
     @Override
-    public List<MusicLinkEntity> query(HibernateSpecification specification, QuerySettings settings) {
-        Session session = HibernateUtils.getSessionFactory().openSession();
+    public List<MusicLinkEntity> query(HibernateSpecification specification, String graphName, QuerySettings settings) {
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<MusicLinkEntity> criteria = builder.createQuery(MusicLinkEntity.class);
 
@@ -85,12 +87,14 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
         criteria.select(root).where(specification.getPredicate(builder, root));
 
         TypedQuery<MusicLinkEntity> query = session.createQuery(criteria);
+        query.setHint("javax.persistence.fetchgraph", session.getEntityGraph(graphName));
         if (settings != null) {
             HibernateUtils.applySettings(query, settings);
         }
-        session.close();
+        List<MusicLinkEntity> result = query.getResultList();
 
-        return query.getResultList();
+        transaction.commit();
+        return result;
     }
 
 }

@@ -1,9 +1,6 @@
 package ilia.nemankov.togrofbot.commands.impl;
 
 import ilia.nemankov.togrofbot.audio.AudioLoaderInfo;
-import ilia.nemankov.togrofbot.audio.GuildMusicManager;
-import ilia.nemankov.togrofbot.audio.GuildMusicManagerProvider;
-import ilia.nemankov.togrofbot.audio.MusicAudioLoader;
 import ilia.nemankov.togrofbot.commands.AbstractCommand;
 import ilia.nemankov.togrofbot.commands.CommandItem;
 import ilia.nemankov.togrofbot.commands.parsing.CommandVariantDescription;
@@ -20,12 +17,10 @@ import ilia.nemankov.togrofbot.database.repository.PlaylistRepository;
 import ilia.nemankov.togrofbot.database.repository.QuerySettings;
 import ilia.nemankov.togrofbot.database.repository.impl.MusicLinkRepositoryImpl;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
-import ilia.nemankov.togrofbot.database.specification.HibernateSpecification;
 import ilia.nemankov.togrofbot.database.specification.impl.MusicLinkSpecificationByPlaylist;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByGuildId;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByNameAndGuildId;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
-import ilia.nemankov.togrofbot.util.HibernateUtils;
 import ilia.nemankov.togrofbot.util.LinkUtils;
 import ilia.nemankov.togrofbot.util.VoiceUtils;
 import ilia.nemankov.togrofbot.util.pagination.PageNotFoundException;
@@ -33,10 +28,7 @@ import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
 import ilia.nemankov.togrofbot.util.pagination.header.impl.DefaultHeader;
 import ilia.nemankov.togrofbot.util.pagination.row.Row;
 import ilia.nemankov.togrofbot.util.pagination.row.impl.MarkedRow;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.core.managers.AudioManager;
 import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,9 +166,7 @@ public class Playlist extends AbstractCommand {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
             PlaylistRepository repository = new PlaylistRepositoryImpl();
-            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
-            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByGuildId(event.getGuild().getIdLong()));
-            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
+            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByGuildId(event.getGuild().getIdLong()), "playlist-entity.without-links");
             List<Row> playlists = entities
                     .parallelStream()
                     .map(entity -> new MarkedRow(entity.getName()))
@@ -217,9 +207,7 @@ public class Playlist extends AbstractCommand {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
             PlaylistRepository repository = new PlaylistRepositoryImpl();
-            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
-            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByGuildId(event.getGuild().getIdLong()));
-            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
+            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByGuildId(event.getGuild().getIdLong()), "playlist-entity.without-links");
             List<Row> playlists = entities
                     .parallelStream()
                     .map(entity -> new MarkedRow(entity.getName()))
@@ -261,9 +249,7 @@ public class Playlist extends AbstractCommand {
 
             String playlist = arguments.get(1).getArgument();
             PlaylistRepository repository = new PlaylistRepositoryImpl();
-            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
-            List<PlaylistEntity> playlistEntities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
-            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
+            List<PlaylistEntity> playlistEntities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()), "playlist-entity.with-links");
             if (playlistEntities.isEmpty()) {
                 return resources.getString("message.command.playlist.not_found");
             }
@@ -313,9 +299,7 @@ public class Playlist extends AbstractCommand {
 
             String playlist = arguments.get(1).getArgument();
             PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
-            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
-            List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
-            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
+            List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()), "playlist-entity.with-links");
             if (playlistEntities.isEmpty()) {
                 return resources.getString("message.command.playlist.not_found");
             }
@@ -325,7 +309,7 @@ public class Playlist extends AbstractCommand {
             int fromTrack = ((NumberArgument)arguments.get(2)).getNumberArgument().intValue();
             QuerySettings querySettings = new QuerySettings();
             querySettings.setFirstResult(fromTrack);
-            List<MusicLinkEntity> musicLinkEntities = musicLinkRepository.query(new MusicLinkSpecificationByPlaylist(playlistEntities.get(0)));
+            List<MusicLinkEntity> musicLinkEntities = musicLinkRepository.query(new MusicLinkSpecificationByPlaylist(playlistEntities.get(0)), "music-link-entity");
 
             List<String> links = new ArrayList<>();
             for (MusicLinkEntity musicLinkEntity : musicLinkEntities) {
@@ -373,9 +357,7 @@ public class Playlist extends AbstractCommand {
             String newName = arguments.get(2).getArgument();
 
             PlaylistRepository repository = new PlaylistRepositoryImpl();
-            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
-            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(oldName, event.getGuild().getIdLong()));
-            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
+            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(oldName, event.getGuild().getIdLong()), "playlist-entity.without-links");
             if (entities.isEmpty()) {
                 return resources.getString("message.command.playlist.update.not_found");
             }

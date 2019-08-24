@@ -85,7 +85,8 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
             String name = arguments.get(1).getArgument();
             String command = arguments.get(2).getArgument();
             for (CommandItem item : getCommandItems()) {
-                if (item.getArgumentsTemplate().getDeterminant().equals(name)) {
+                String determinant = item.getArgumentsTemplate().getDeterminant();
+                if (determinant != null && determinant.equals(name)) {
                     return resources.getString("message.command.alias.add.invalid_name");
                 }
             }
@@ -141,7 +142,7 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
 
             String name = arguments.get(0).getArgument();
             AliasRepository repository = new AliasRepositoryImpl();
-            List<AliasEntity> entities = repository.query(new AliasSpecificationByNameAndGuildId(name, event.getGuild().getIdLong()));
+            List<AliasEntity> entities = repository.query(new AliasSpecificationByNameAndGuildId(name, event.getGuild().getIdLong()), "alias-entity");
 
             if (entities.isEmpty()) {
                 return resources.getString("message.command.alias.not_found");
@@ -223,7 +224,7 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
             AliasRepository repository = new AliasRepositoryImpl();
-            List<AliasEntity> entities = repository.query(new AliasSpecificationByGuildId(event.getGuild().getIdLong()));
+            List<AliasEntity> entities = repository.query(new AliasSpecificationByGuildId(event.getGuild().getIdLong()), "alias-entity");
             List<Row> aliases = entities
                     .parallelStream()
                     .map(entity -> new MarkedRow(buildContent(entity.getName(), entity.getCommand())))
@@ -264,7 +265,7 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
             AliasRepository repository = new AliasRepositoryImpl();
-            List<AliasEntity> entities = repository.query(new AliasSpecificationByGuildId(event.getGuild().getIdLong()));
+            List<AliasEntity> entities = repository.query(new AliasSpecificationByGuildId(event.getGuild().getIdLong()), "alias-entity");
             List<Row> aliases = entities
                     .parallelStream()
                     .map(entity -> new MarkedRow(buildContent(entity.getName(), entity.getCommand())))

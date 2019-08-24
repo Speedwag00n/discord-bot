@@ -4,8 +4,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.List;
 
+@NamedEntityGraph(
+   name = "alias-entity",
+   attributeNodes = {
+       @NamedAttributeNode("id"),
+       @NamedAttributeNode("name"),
+       @NamedAttributeNode("guildId"),
+       @NamedAttributeNode("command")
+   }
+)
 @Entity
 @Table(name = "alias")
 @Data

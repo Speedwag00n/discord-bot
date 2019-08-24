@@ -7,6 +7,15 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
+@NamedEntityGraph(
+    name = "music-link-entity",
+    attributeNodes = {
+        @NamedAttributeNode("identifier"),
+        @NamedAttributeNode("source"),
+        @NamedAttributeNode("title"),
+        @NamedAttributeNode("creationDatetime")
+    }
+)
 @Entity
 @Table(name = "music_link")
 @Data
