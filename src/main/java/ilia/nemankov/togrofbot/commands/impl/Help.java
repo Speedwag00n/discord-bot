@@ -169,6 +169,7 @@ public class Help extends AbstractCommand {
 
     private List<Row> mapEntitiesToRows(List<Command> commands, int count, int offset) {
         if (count <= 0 || offset < 0) {
+            logger.error("Received invalid args: count={}, offset={}", count, offset);
             throw new IllegalArgumentException();
         }
         List<Row> rows = new ArrayList<>();

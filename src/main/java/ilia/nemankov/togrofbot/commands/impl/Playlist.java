@@ -374,6 +374,7 @@ public class Playlist extends AbstractCommand {
 
     private List<PlaylistEntity> getPlaylistsFromDB(int page, int itemsOnPage, long guildId) {
         if (page <= 0 || itemsOnPage <= 0 || guildId < 0) {
+            logger.error("Received invalid args: page={}, itemsOnPage={}, guildId={}", page, itemsOnPage, guildId);
             throw new IllegalArgumentException();
         }
         PlaylistRepository repository = new PlaylistRepositoryImpl();

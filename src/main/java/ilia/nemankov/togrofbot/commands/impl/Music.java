@@ -323,6 +323,7 @@ public class Music extends AbstractCommand {
 
     private List<MusicLinkEntity> getMusicLinksFromDB(int from, int count, long guildId, String playlistName) {
         if (from < 0 || count <= 0 || guildId < 0) {
+            logger.error("Received invalid args: from={}, count={}, guildId={}", from, count, guildId);
             throw new IllegalArgumentException();
         }
         PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();

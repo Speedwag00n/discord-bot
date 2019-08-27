@@ -97,6 +97,7 @@ public class Roll extends AbstractCommand {
 
     private String generateResult(int bottomBorder, int topBorder, User author) {
         if (bottomBorder < 0 || topBorder < 0) {
+            logger.error("Received invalid args: bottomBorder={}, topBorder={}", bottomBorder, topBorder);
             throw new IllegalArgumentException();
         }
         ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());

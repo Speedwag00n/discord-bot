@@ -291,6 +291,7 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
 
     private int getMaxPageNumber(long guildId, int itemsOnPage) {
         if (guildId < 0 || itemsOnPage <= 0) {
+            logger.error("Received invalid args: guildId={}, itemsOnPage={}", guildId, itemsOnPage);
             throw new IllegalArgumentException();
         }
         AliasRepository repository = new AliasRepositoryImpl();
@@ -300,6 +301,7 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
 
     private List<AliasEntity> getAliasesFromDB(int page, int itemsOnPage, long guildId) {
         if (page <= 0 || itemsOnPage <= 0 || guildId < 0) {
+            logger.error("Received invalid args: page={}, itemsOnPage={}, guildId={}", page, itemsOnPage, guildId);
             throw new IllegalArgumentException();
         }
         AliasRepository repository = new AliasRepositoryImpl();
