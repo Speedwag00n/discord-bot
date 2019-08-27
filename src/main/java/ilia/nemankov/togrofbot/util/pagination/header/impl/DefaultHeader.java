@@ -12,6 +12,10 @@ import java.util.ResourceBundle;
 @NoArgsConstructor
 public class DefaultHeader extends Header {
 
+    public DefaultHeader(int pageNumber, int maxPageNumber) {
+        super(pageNumber, maxPageNumber);
+    }
+
     @Override
     public String toString() {
         ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());

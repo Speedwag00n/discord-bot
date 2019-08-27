@@ -37,8 +37,10 @@ public class DefaultCommandParser implements CommandParser {
                 }
             } else if (symbol == ' ') {
                 if (closed) {
-                    items.add(valueBuilder.toString());
-                    valueBuilder = new StringBuilder();
+                    if (last != ' ') {
+                        items.add(valueBuilder.toString());
+                        valueBuilder = new StringBuilder();
+                    }
                 } else {
                     valueBuilder.append(' ');
                 }

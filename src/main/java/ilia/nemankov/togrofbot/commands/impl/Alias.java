@@ -11,11 +11,11 @@ import ilia.nemankov.togrofbot.commands.parsing.matching.NumberArgumentMatcher;
 import ilia.nemankov.togrofbot.commands.parsing.matching.StringArgumentMatcher;
 import ilia.nemankov.togrofbot.database.entity.AliasEntity;
 import ilia.nemankov.togrofbot.database.repository.AliasRepository;
+import ilia.nemankov.togrofbot.database.repository.QuerySettings;
 import ilia.nemankov.togrofbot.database.repository.impl.AliasRepositoryImpl;
 import ilia.nemankov.togrofbot.database.specification.impl.AliasSpecificationByGuildId;
 import ilia.nemankov.togrofbot.database.specification.impl.AliasSpecificationByNameAndGuildId;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
-import ilia.nemankov.togrofbot.util.pagination.PageNotFoundException;
 import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
 import ilia.nemankov.togrofbot.util.pagination.header.impl.DefaultHeader;
 import ilia.nemankov.togrofbot.util.pagination.row.Row;
@@ -81,9 +81,9 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-
             String name = arguments.get(1).getArgument();
             String command = arguments.get(2).getArgument();
+
             for (CommandItem item : getCommandItems()) {
                 String determinant = item.getArgumentsTemplate().getDeterminant();
                 if (determinant != null && determinant.equals(name)) {
@@ -139,8 +139,8 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-
             String name = arguments.get(0).getArgument();
+
             AliasRepository repository = new AliasRepositoryImpl();
             List<AliasEntity> entities = repository.query(new AliasSpecificationByNameAndGuildId(name, event.getGuild().getIdLong()), "alias-entity");
 
@@ -184,7 +184,6 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-
             String name = arguments.get(1).getArgument();
 
             AliasEntity entity = new AliasEntity();
@@ -223,24 +222,16 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
-            AliasRepository repository = new AliasRepositoryImpl();
-            List<AliasEntity> entities = repository.query(new AliasSpecificationByGuildId(event.getGuild().getIdLong()), "alias-entity");
-            List<Row> aliases = entities
-                    .parallelStream()
-                    .map(entity -> new MarkedRow(buildContent(entity.getName(), entity.getCommand())))
-                    .collect(Collectors.toList());
-            if (aliases.isEmpty()) {
+            int itemsOnPage = SettingsProvider.getInstance().getDefaultPageSize();
+            int maxPageNumber = getMaxPageNumber(event.getGuild().getIdLong(), itemsOnPage);
+            if (maxPageNumber == 0) {
                 return resources.getString("message.command.alias.show.empty");
             }
-            try {
-                return PaginationUtils.buildPage(1, new DefaultHeader(), aliases, null).toString();
-            } catch (PageNotFoundException e) {
-                logger.error("Error caused by building first page for command {}", this.getClass().getSimpleName(), e);
-                return MessageFormat.format(
-                        resources.getString("message.command.playlist.alias.failed"),
-                        1
-                );
-            }
+
+            List<AliasEntity> entities = getAliasesFromDB(1, itemsOnPage, event.getGuild().getIdLong());
+            List<Row> aliases = mapEntitiesToRows(entities);
+
+            return PaginationUtils.buildPage(new DefaultHeader(1, maxPageNumber), aliases, null).toString();
         }
     }
 
@@ -263,26 +254,24 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            int page = ((NumberArgument)arguments.get(1)).getNumberArgument().intValue();
 
-            AliasRepository repository = new AliasRepositoryImpl();
-            List<AliasEntity> entities = repository.query(new AliasSpecificationByGuildId(event.getGuild().getIdLong()), "alias-entity");
-            List<Row> aliases = entities
-                    .parallelStream()
-                    .map(entity -> new MarkedRow(buildContent(entity.getName(), entity.getCommand())))
-                    .collect(Collectors.toList());
-            if (aliases.isEmpty()) {
+            int itemsOnPage = SettingsProvider.getInstance().getDefaultPageSize();
+            int maxPageNumber = getMaxPageNumber(event.getGuild().getIdLong(), itemsOnPage);
+            if (maxPageNumber == 0) {
                 return resources.getString("message.command.alias.show.empty");
             }
-            int page = ((NumberArgument)arguments.get(1)).getNumberArgument().intValue();
-            try {
-                return PaginationUtils.buildPage(page, new DefaultHeader(), aliases, null).toString();
-            } catch (PageNotFoundException e) {
-                logger.error("Error caused by building first page for command {}", this.getClass().getSimpleName(), e);
+            if (maxPageNumber < page || page <= 0) {
                 return MessageFormat.format(
-                        resources.getString("message.command.playlist.alias.failed"),
-                        1
+                        resources.getString("message.pagination.page.not_found"),
+                        page
                 );
             }
+
+            List<AliasEntity> entities = getAliasesFromDB(page, itemsOnPage, event.getGuild().getIdLong());
+            List<Row> aliases = mapEntitiesToRows(entities);
+
+            return PaginationUtils.buildPage(new DefaultHeader(page, maxPageNumber), aliases, null).toString();
         }
     }
 
@@ -298,6 +287,35 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
     private String buildContent(String commandName, String commandRequest) {
         String content = "\"" + commandName + "\": " + "\"" + commandRequest + "\"";
         return content;
+    }
+
+    private int getMaxPageNumber(long guildId, int itemsOnPage) {
+        if (guildId < 0 || itemsOnPage <= 0) {
+            throw new IllegalArgumentException();
+        }
+        AliasRepository repository = new AliasRepositoryImpl();
+
+        return PaginationUtils.maxPage(itemsOnPage, repository.count(new AliasSpecificationByGuildId(guildId)));
+    }
+
+    private List<AliasEntity> getAliasesFromDB(int page, int itemsOnPage, long guildId) {
+        if (page <= 0 || itemsOnPage <= 0 || guildId < 0) {
+            throw new IllegalArgumentException();
+        }
+        AliasRepository repository = new AliasRepositoryImpl();
+
+        QuerySettings querySettings = new QuerySettings();
+        querySettings.setFirstResult((page - 1) * itemsOnPage);
+        querySettings.setMaxResult(itemsOnPage);
+
+        return repository.query(new AliasSpecificationByGuildId(guildId), "alias-entity", querySettings);
+    }
+
+    private List<Row> mapEntitiesToRows(List<AliasEntity> entities) {
+        return entities
+                .parallelStream()
+                .map(entity -> new MarkedRow(buildContent(entity.getName(), entity.getCommand())))
+                .collect(Collectors.toList());
     }
 
 }

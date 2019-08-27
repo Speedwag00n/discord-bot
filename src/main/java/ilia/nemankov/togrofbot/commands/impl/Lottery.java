@@ -53,14 +53,8 @@ public class Lottery extends AbstractCommand {
 
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
-            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-
             List<Member> members = event.getGuild().getMembers();
-            Random random = new Random(System.currentTimeMillis());
-            return MessageFormat.format(
-                    resources.getString("message.command.lottery.winner"),
-                    members.get(random.nextInt(members.size())).getAsMention()
-            );
+            return chooseWinner(members);
         }
     }
 
@@ -82,15 +76,19 @@ public class Lottery extends AbstractCommand {
 
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
-            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-
             List<Member> members = event.getMessage().getMentionedMembers();
-            Random random = new Random(System.currentTimeMillis());
-            return MessageFormat.format(
-                    resources.getString("message.command.lottery.winner"),
-                    members.get(random.nextInt(members.size())).getAsMention()
-            );
+            return chooseWinner(members);
         }
+    }
+
+    private String chooseWinner(List<Member> members) {
+        ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
+        Random random = new Random(System.currentTimeMillis());
+        return MessageFormat.format(
+                resources.getString("message.command.lottery.winner"),
+                members.get(random.nextInt(members.size())).getAsMention()
+        );
     }
 
 }

@@ -23,7 +23,6 @@ import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecification
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import ilia.nemankov.togrofbot.util.LinkUtils;
 import ilia.nemankov.togrofbot.util.VoiceUtils;
-import ilia.nemankov.togrofbot.util.pagination.PageNotFoundException;
 import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
 import ilia.nemankov.togrofbot.util.pagination.header.impl.DefaultHeader;
 import ilia.nemankov.togrofbot.util.pagination.row.Row;
@@ -81,7 +80,6 @@ public class Playlist extends AbstractCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-
             String name = arguments.get(1).getArgument();
 
             try {
@@ -165,24 +163,16 @@ public class Playlist extends AbstractCommand {
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
-            PlaylistRepository repository = new PlaylistRepositoryImpl();
-            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByGuildId(event.getGuild().getIdLong()), "playlist-entity.without-links");
-            List<Row> playlists = entities
-                    .parallelStream()
-                    .map(entity -> new MarkedRow(entity.getName()))
-                    .collect(Collectors.toList());
-            if (playlists.isEmpty()) {
+            int itemsOnPage = SettingsProvider.getInstance().getDefaultPageSize();
+            int maxPageNumber = getMaxPageNumber(event.getGuild().getIdLong(), itemsOnPage);
+            if (maxPageNumber == 0) {
                 return resources.getString("message.command.playlist.show.empty");
             }
-            try {
-                return PaginationUtils.buildPage(1, new DefaultHeader(), playlists, null).toString();
-            } catch (PageNotFoundException e) {
-                logger.error("Error caused by building first page for command {}", this.getClass().getSimpleName(), e);
-                return MessageFormat.format(
-                        resources.getString("message.command.playlist.show.failed"),
-                        1
-                );
-            }
+
+            List<PlaylistEntity> entities = getPlaylistsFromDB(1, itemsOnPage, event.getGuild().getIdLong());
+            List<Row> playlists = mapEntitiesToRows(entities);
+
+            return PaginationUtils.buildPage(new DefaultHeader(1, maxPageNumber), playlists, null).toString();
         }
     }
 
@@ -205,25 +195,24 @@ public class Playlist extends AbstractCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            int page = ((NumberArgument)arguments.get(1)).getNumberArgument().intValue();
 
-            PlaylistRepository repository = new PlaylistRepositoryImpl();
-            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByGuildId(event.getGuild().getIdLong()), "playlist-entity.without-links");
-            List<Row> playlists = entities
-                    .parallelStream()
-                    .map(entity -> new MarkedRow(entity.getName()))
-                    .collect(Collectors.toList());
-            if (playlists.isEmpty()) {
+            int itemsOnPage = SettingsProvider.getInstance().getDefaultPageSize();
+            int maxPageNumber = getMaxPageNumber(event.getGuild().getIdLong(), itemsOnPage);
+            if (maxPageNumber == 0) {
                 return resources.getString("message.command.playlist.show.empty");
             }
-            int page = ((NumberArgument)arguments.get(1)).getNumberArgument().intValue();
-            try {
-                return PaginationUtils.buildPage(page, new DefaultHeader(), playlists, null).toString();
-            } catch (PageNotFoundException e) {
+            if (maxPageNumber < page || page <= 0) {
                 return MessageFormat.format(
                         resources.getString("message.pagination.page.not_found"),
                         page
                 );
             }
+
+            List<PlaylistEntity> entities = getPlaylistsFromDB(1, itemsOnPage, event.getGuild().getIdLong());
+            List<Row> playlists = mapEntitiesToRows(entities);
+
+            return PaginationUtils.buildPage(new DefaultHeader(1, maxPageNumber), playlists, null).toString();
         }
     }
 
@@ -246,8 +235,8 @@ public class Playlist extends AbstractCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-
             String playlist = arguments.get(1).getArgument();
+
             PlaylistRepository repository = new PlaylistRepositoryImpl();
             List<PlaylistEntity> playlistEntities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()), "playlist-entity.with-links");
             if (playlistEntities.isEmpty()) {
@@ -255,14 +244,7 @@ public class Playlist extends AbstractCommand {
             }
             List<MusicLinkEntity> musicLinkEntities = playlistEntities.get(0).getLinks();
 
-            List<String> links = new ArrayList<>();
-            for (MusicLinkEntity musicLinkEntity : musicLinkEntities) {
-                VideoInfo info = new VideoInfo(musicLinkEntity.getIdentifier(), musicLinkEntity.getSource(), musicLinkEntity.getTitle());
-                String link;
-                if ((link = LinkUtils.buildLink(info)) != null) {
-                    links.add(link);
-                }
-            }
+            List<String> links = buildLinks(musicLinkEntities);
 
             AudioLoaderInfo info = new AudioLoaderInfo();
 
@@ -296,29 +278,31 @@ public class Playlist extends AbstractCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-
             String playlist = arguments.get(1).getArgument();
+            int fromTrack = ((NumberArgument)arguments.get(2)).getNumberArgument().intValue();
+
             PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
-            List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()), "playlist-entity.with-links");
+            List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()), "playlist-entity.without-links");
             if (playlistEntities.isEmpty()) {
                 return resources.getString("message.command.playlist.not_found");
             }
 
             MusicLinkRepository musicLinkRepository = new MusicLinkRepositoryImpl();
 
-            int fromTrack = ((NumberArgument)arguments.get(2)).getNumberArgument().intValue();
+            long tracksCount = musicLinkRepository.count(new MusicLinkSpecificationByPlaylist(playlistEntities.get(0)));
+
+            if (fromTrack <= 0 || tracksCount < fromTrack) {
+                return MessageFormat.format(
+                        resources.getString("message.command.playlist.play.incorrect_index"),
+                        playlist
+                );
+            }
+
             QuerySettings querySettings = new QuerySettings();
             querySettings.setFirstResult(fromTrack);
             List<MusicLinkEntity> musicLinkEntities = musicLinkRepository.query(new MusicLinkSpecificationByPlaylist(playlistEntities.get(0)), "music-link-entity");
 
-            List<String> links = new ArrayList<>();
-            for (MusicLinkEntity musicLinkEntity : musicLinkEntities) {
-                VideoInfo info = new VideoInfo(musicLinkEntity.getIdentifier(), musicLinkEntity.getSource(), musicLinkEntity.getTitle());
-                String link;
-                if ((link = LinkUtils.buildLink(info)) != null) {
-                    links.add(link);
-                }
-            }
+            List<String> links = buildLinks(musicLinkEntities);
 
             AudioLoaderInfo info = new AudioLoaderInfo();
 
@@ -352,7 +336,6 @@ public class Playlist extends AbstractCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-
             String oldName = arguments.get(1).getArgument();
             String newName = arguments.get(2).getArgument();
 
@@ -378,6 +361,47 @@ public class Playlist extends AbstractCommand {
 
             return resources.getString("message.command.playlist.update.successful");
         }
+    }
+
+    private int getMaxPageNumber(long guildId, int itemsOnPage) {
+        if (guildId < 0 || itemsOnPage <= 0) {
+            throw new IllegalArgumentException();
+        }
+        PlaylistRepository repository = new PlaylistRepositoryImpl();
+
+        return PaginationUtils.maxPage(itemsOnPage, repository.count(new PlaylistSpecificationByGuildId(guildId)));
+    }
+
+    private List<PlaylistEntity> getPlaylistsFromDB(int page, int itemsOnPage, long guildId) {
+        if (page <= 0 || itemsOnPage <= 0 || guildId < 0) {
+            throw new IllegalArgumentException();
+        }
+        PlaylistRepository repository = new PlaylistRepositoryImpl();
+
+        QuerySettings querySettings = new QuerySettings();
+        querySettings.setFirstResult((page - 1) * itemsOnPage);
+        querySettings.setMaxResult(itemsOnPage);
+
+        return repository.query(new PlaylistSpecificationByGuildId(guildId), "playlist-entity.without-links", querySettings);
+    }
+
+    private List<Row> mapEntitiesToRows(List<PlaylistEntity> entities) {
+        return entities
+                .parallelStream()
+                .map(entity -> new MarkedRow(entity.getName()))
+                .collect(Collectors.toList());
+    }
+
+    private List<String> buildLinks(List<MusicLinkEntity> entities) {
+        List<String> links = new ArrayList<>();
+        for (MusicLinkEntity musicLinkEntity : entities) {
+            VideoInfo info = new VideoInfo(musicLinkEntity.getIdentifier(), musicLinkEntity.getSource(), musicLinkEntity.getTitle());
+            String link;
+            if ((link = LinkUtils.buildLink(info)) != null) {
+                links.add(link);
+            }
+        }
+        return links;
     }
 
 }

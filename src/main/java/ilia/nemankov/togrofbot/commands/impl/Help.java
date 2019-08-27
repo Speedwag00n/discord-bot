@@ -8,7 +8,6 @@ import ilia.nemankov.togrofbot.commands.parsing.matching.ArgumentsTemplate;
 import ilia.nemankov.togrofbot.commands.parsing.matching.NumberArgumentMatcher;
 import ilia.nemankov.togrofbot.commands.parsing.matching.StringArgumentMatcher;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
-import ilia.nemankov.togrofbot.util.pagination.PageNotFoundException;
 import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
 import ilia.nemankov.togrofbot.util.pagination.header.impl.DefaultHeader;
 import ilia.nemankov.togrofbot.util.pagination.row.Row;
@@ -19,9 +18,9 @@ import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 public class Help extends AbstractCommand {
 
@@ -65,29 +64,15 @@ public class Help extends AbstractCommand {
 
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
-            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            List<Command> commands = CommandManagerMainImpl.getInstance().getCommands();
 
-            CommandManager commandManager = CommandManagerMainImpl.getInstance();
-            List<Command> commands = commandManager.getCommands();
-            List<Row> commandsDescription = new ArrayList<>();
-            for (Command command : commands) {
-                commandsDescription.addAll(
-                        command
-                                .getDescriptions()
-                                .stream()
-                                .map(description -> new MarkedRow(buildContent(command.getVariants()[0], description)))
-                                .collect(Collectors.toList())
-                );
-            }
-            try {
-                return PaginationUtils.buildPage(1, new DefaultHeader(), commandsDescription, null).toString();
-            } catch (PageNotFoundException e) {
-                logger.error("Error caused by building first page for command {}", this.getClass().getSimpleName(), e);
-                return MessageFormat.format(
-                        resources.getString("message.command.playlist.show.failed"),
-                        1
-                );
-            }
+            int itemsOnPage = SettingsProvider.getInstance().getDefaultPageSize();
+            int descriptionsCount = getDescriptionCount(commands);
+            int maxPageNumber = PaginationUtils.maxPage(itemsOnPage, descriptionsCount);
+
+            List<Row> commandsDescription = mapEntitiesToRows(commands, itemsOnPage, 0);
+
+            return PaginationUtils.buildPage(new DefaultHeader(1, maxPageNumber), commandsDescription, null).toString();
         }
     }
 
@@ -110,28 +95,23 @@ public class Help extends AbstractCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-
-            CommandManager commandManager = CommandManagerMainImpl.getInstance();
-            List<Command> commands = commandManager.getCommands();
-            List<Row> commandsDescription = new ArrayList<>();
-            for (Command command : commands) {
-                commandsDescription.addAll(
-                        command
-                                .getDescriptions()
-                                .stream()
-                                .map(description -> new MarkedRow(buildContent(command.getVariants()[0], description)))
-                                .collect(Collectors.toList())
-                );
-            }
             int page = ((NumberArgument) arguments.get(0)).getNumberArgument().intValue();
-            try {
-                return PaginationUtils.buildPage(page, new DefaultHeader(), commandsDescription, null).toString();
-            } catch (PageNotFoundException e) {
+
+            List<Command> commands = CommandManagerMainImpl.getInstance().getCommands();
+
+            int itemsOnPage = SettingsProvider.getInstance().getDefaultPageSize();
+            int descriptionsCount = getDescriptionCount(commands);
+            int maxPageNumber = PaginationUtils.maxPage(itemsOnPage, descriptionsCount);
+
+            if (maxPageNumber < page || page <= 0) {
                 return MessageFormat.format(
                         resources.getString("message.pagination.page.not_found"),
                         page
                 );
             }
+            List<Row> commandsDescription = mapEntitiesToRows(commands, itemsOnPage, (page - 1) * itemsOnPage);
+
+            return PaginationUtils.buildPage(new DefaultHeader(page, maxPageNumber), commandsDescription, null).toString();
         }
     }
 
@@ -154,26 +134,18 @@ public class Help extends AbstractCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-
             String commandName = arguments.get(0).getArgument();
+
             Command command = CommandHandlerImpl.getInstance().getCommandByName(commandName);
+
             if (command == null) {
                 return resources.getString("message.command.help.command.not_found");
             }
-            List<Row> commandsDescription = new ArrayList<>();
-            commandsDescription.addAll(
-                    command
-                            .getDescriptions()
-                            .stream()
-                            .map(description -> new MarkedRow(buildContent(command.getVariants()[0], description)))
-                            .collect(Collectors.toList())
-            );
-            try {
-                return PaginationUtils.buildPage(1, commandsDescription.size(), null, commandsDescription, null).toString();
-            } catch (PageNotFoundException e) {
-                logger.error("Error caused by building help page for command {}", commandName, e);
-                return null;
-            }
+
+            int descriptionsCount = command.getDescriptions().size();
+            List<Row> commandsDescription = mapEntitiesToRows(Collections.singletonList(command), descriptionsCount, 0);
+
+            return PaginationUtils.buildPage(null, commandsDescription, null).toString();
         }
     }
 
@@ -185,6 +157,37 @@ public class Help extends AbstractCommand {
                 + "- "
                 + description.getDescription();
         return content;
+    }
+
+    private int getDescriptionCount(List<Command> commands) {
+        int count = 0;
+        for (Command command : commands) {
+            count += command.getDescriptions().size();
+        }
+        return count;
+    }
+
+    private List<Row> mapEntitiesToRows(List<Command> commands, int count, int offset) {
+        if (count <= 0 || offset < 0) {
+            throw new IllegalArgumentException();
+        }
+        List<Row> rows = new ArrayList<>();
+        int mapped = 0;
+        int skipped = 0;
+        mapper: for (Command command : commands) {
+            for (CommandVariantDescription description : command.getDescriptions()) {
+                if (skipped != offset) {
+                    skipped++;
+                    continue;
+                }
+                if (mapped++ == count) {
+                    break mapper;
+                }
+                Row row = new MarkedRow(buildContent(command.getVariants()[0], description));
+                rows.add(row);
+            }
+        }
+        return rows;
     }
 
 }

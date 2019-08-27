@@ -62,12 +62,12 @@ public class VoiceUtils {
         switch(type) {
             case MUSIC:
                 for (String link : info.getLinks()) {
-                    provider.getPlayerManager().loadItem(link, new EmotionAudioLoader(musicManager.getTrackScheduler()));
+                    provider.getPlayerManager().loadItem(link, new MusicAudioLoader(musicManager.getTrackScheduler()));
                 }
                 break;
             case EMOTION:
                 for (String link : info.getLinks()) {
-                    provider.getPlayerManager().loadItem(link, new MusicAudioLoader(musicManager.getTrackScheduler()));
+                    provider.getPlayerManager().loadItem(link, new EmotionAudioLoader(musicManager.getTrackScheduler()));
                 }
                 break;
                 default:
