@@ -23,9 +23,13 @@ public class AliasRepositoryImpl implements AliasRepository {
         Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
-        session.save(entity);
-
-        transaction.commit();
+        try {
+            session.save(entity);
+            transaction.commit();
+        } catch (Exception e) {
+            transaction.rollback();
+            throw e;
+        }
     }
 
     @Override
@@ -37,11 +41,14 @@ public class AliasRepositoryImpl implements AliasRepository {
         query.setParameter("paramName", entity.getName());
         query.setParameter("paramGuildId", entity.getGuildId());
 
-        int deleted = query.executeUpdate();
-
-        transaction.commit();
-
-        return deleted;
+        try {
+            int deleted = query.executeUpdate();
+            transaction.commit();
+            return deleted;
+        } catch (Exception e) {
+            transaction.rollback();
+            throw e;
+        }
     }
 
     @Override
@@ -60,9 +67,13 @@ public class AliasRepositoryImpl implements AliasRepository {
             criteria.set(root.get("command"), entity.getCommand());
         }
 
-        session.update(entity);
-
-        transaction.commit();
+        try {
+            session.update(entity);
+            transaction.commit();
+        } catch (Exception e) {
+            transaction.rollback();
+            throw e;
+        }
     }
 
     @Override
@@ -85,10 +96,15 @@ public class AliasRepositoryImpl implements AliasRepository {
         if (settings != null) {
             HibernateUtils.applySettings(query, settings);
         }
-        long result = query.getSingleResult();
 
-        transaction.commit();
-        return result;
+        try {
+            long result = query.getSingleResult();
+            transaction.commit();
+            return result;
+        } catch (Exception e) {
+            transaction.rollback();
+            throw e;
+        }
     }
 
     @Override
@@ -112,10 +128,15 @@ public class AliasRepositoryImpl implements AliasRepository {
         if (settings != null) {
             HibernateUtils.applySettings(query, settings);
         }
-        List<AliasEntity> result = query.getResultList();
 
-        transaction.commit();
-        return result;
+        try {
+            List<AliasEntity> result = query.getResultList();
+            transaction.commit();
+            return result;
+        } catch (Exception e) {
+            transaction.rollback();
+            throw e;
+        }
     }
 
 }

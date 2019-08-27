@@ -22,9 +22,13 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
         Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
-        session.save(entity);
-
-        transaction.commit();
+        try {
+            session.save(entity);
+            transaction.commit();
+        } catch (Exception e) {
+            transaction.rollback();
+            throw e;
+        }
     }
 
     @Override
@@ -37,11 +41,14 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
         query.setParameter("paramPlaylist", entity.getPlaylist());
         query.setParameter("paramSource", entity.getSource());
 
-        int result = query.executeUpdate();
-
-        transaction.commit();
-
-        return result;
+        try {
+            int result = query.executeUpdate();
+            transaction.commit();
+            return result;
+        } catch (Exception e) {
+            transaction.rollback();
+            throw e;
+        }
     }
 
     @Override
@@ -64,10 +71,15 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
         if (settings != null) {
             HibernateUtils.applySettings(query, settings);
         }
-        long result = query.getSingleResult();
 
-        transaction.commit();
-        return result;
+        try {
+            long result = query.getSingleResult();
+            transaction.commit();
+            return result;
+        } catch (Exception e) {
+            transaction.rollback();
+            throw e;
+        }
     }
 
     @Override
@@ -91,10 +103,15 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
         if (settings != null) {
             HibernateUtils.applySettings(query, settings);
         }
-        List<MusicLinkEntity> result = query.getResultList();
 
-        transaction.commit();
-        return result;
+        try {
+            List<MusicLinkEntity> result = query.getResultList();
+            transaction.commit();
+            return result;
+        } catch (Exception e) {
+            transaction.rollback();
+            throw e;
+        }
     }
 
 }

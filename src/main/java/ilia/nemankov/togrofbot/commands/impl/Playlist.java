@@ -209,10 +209,10 @@ public class Playlist extends AbstractCommand {
                 );
             }
 
-            List<PlaylistEntity> entities = getPlaylistsFromDB(1, itemsOnPage, event.getGuild().getIdLong());
+            List<PlaylistEntity> entities = getPlaylistsFromDB(page, itemsOnPage, event.getGuild().getIdLong());
             List<Row> playlists = mapEntitiesToRows(entities);
 
-            return PaginationUtils.buildPage(new DefaultHeader(1, maxPageNumber), playlists, null).toString();
+            return PaginationUtils.buildPage(new DefaultHeader(page, maxPageNumber), playlists, null).toString();
         }
     }
 
