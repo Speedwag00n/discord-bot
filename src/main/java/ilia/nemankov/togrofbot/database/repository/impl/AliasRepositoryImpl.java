@@ -122,6 +122,7 @@ public class AliasRepositoryImpl implements AliasRepository {
 
         Root<AliasEntity> root = criteria.from(AliasEntity.class);
         criteria.select(root).where(specification.getPredicate(builder, root));
+        criteria.orderBy(builder.asc(root.get("creationDatetime")));
 
         TypedQuery<AliasEntity> query = session.createQuery(criteria);
         query.setHint("javax.persistence.fetchgraph", session.getEntityGraph(graphName));

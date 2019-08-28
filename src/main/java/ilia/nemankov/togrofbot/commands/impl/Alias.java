@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -101,6 +102,7 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
                 entity.setName(name);
                 entity.setGuildId(event.getGuild().getIdLong());
                 entity.setCommand(command);
+                entity.setCreationDatetime(new Date());
 
                 AliasRepository repository = new AliasRepositoryImpl();
                 repository.addAlias(entity);

@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.List;
 
 @NamedEntityGraphs(
@@ -58,5 +59,8 @@ public class PlaylistEntity {
     @OneToMany (mappedBy="playlist", fetch=FetchType.LAZY)
     @OrderBy("creation_datetime asc")
     private List<MusicLinkEntity> links;
+
+    @Column(name = "creation_datetime")
+    private Date creationDatetime;
 
 }

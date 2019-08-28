@@ -66,6 +66,7 @@ public class MusicLinkRepositoryImpl implements MusicLinkRepository {
 
         Root<MusicLinkEntity> root = criteria.from(MusicLinkEntity.class);
         criteria.select(builder.count(root)).where(specification.getPredicate(builder, root));
+        criteria.orderBy(builder.asc(root.get("creationDatetime")));
 
         TypedQuery<Long> query = session.createQuery(criteria);
         if (settings != null) {

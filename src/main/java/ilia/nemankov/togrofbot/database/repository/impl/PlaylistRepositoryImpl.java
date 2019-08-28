@@ -117,6 +117,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
         Root<PlaylistEntity> root = criteria.from(PlaylistEntity.class);
         criteria.select(root).where(specification.getPredicate(builder, root));
+        criteria.orderBy(builder.asc(root.get("creationDatetime")));
 
         TypedQuery<PlaylistEntity> query = session.createQuery(criteria);
         query.setHint("javax.persistence.fetchgraph", session.getEntityGraph(graphName));

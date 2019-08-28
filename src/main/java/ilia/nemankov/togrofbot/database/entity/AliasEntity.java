@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @NamedEntityGraph(
    name = "alias-entity",
@@ -33,5 +34,8 @@ public class AliasEntity {
 
     @Column(name = "command")
     private String command;
+
+    @Column(name = "creation_datetime")
+    private Date creationDatetime;
 
 }

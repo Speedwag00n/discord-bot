@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -86,6 +87,7 @@ public class Playlist extends AbstractCommand {
                 PlaylistEntity entity = new PlaylistEntity();
                 entity.setName(name);
                 entity.setGuildId(event.getGuild().getIdLong());
+                entity.setCreationDatetime(new Date());
 
                 PlaylistRepository repository = new PlaylistRepositoryImpl();
                 repository.addPlaylist(entity);
