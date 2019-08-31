@@ -52,7 +52,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Override
-    public void updatePlaylist(PlaylistEntity entity) {
+    public int updatePlaylistName(HibernateSpecification specification, String name) {
         Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
@@ -60,11 +60,13 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
         CriteriaUpdate<PlaylistEntity> criteria = builder.createCriteriaUpdate(PlaylistEntity.class);
 
         Root<PlaylistEntity> root = criteria.from(PlaylistEntity.class);
-        criteria.set(root.get("name"), entity.getName());
+        criteria.set(root.get("name"), name).where(specification.getPredicate(builder, root));
 
+        TypedQuery<Long> query = session.createQuery(criteria);
         try {
-            session.update(entity);
+            int updated = query.executeUpdate();
             transaction.commit();
+            return updated;
         } catch (Exception e) {
             transaction.rollback();
             throw e;

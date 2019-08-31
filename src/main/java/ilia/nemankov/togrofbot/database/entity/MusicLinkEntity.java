@@ -3,6 +3,7 @@ package ilia.nemankov.togrofbot.database.entity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.annotation.concurrent.Immutable;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
@@ -18,6 +19,7 @@ import java.util.Date;
 )
 @Entity
 @Table(name = "music_link")
+@Immutable
 @Data
 @NoArgsConstructor
 public class MusicLinkEntity implements Serializable {
@@ -41,6 +43,7 @@ public class MusicLinkEntity implements Serializable {
     private String title;
 
     @Column(name = "creation_datetime")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date creationDatetime;
 
 }

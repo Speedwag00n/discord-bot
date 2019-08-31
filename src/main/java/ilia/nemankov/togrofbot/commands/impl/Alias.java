@@ -55,6 +55,7 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
         commandItems.add(new AliasShowFirstPage());
         commandItems.add(new AliasShowSpecifiedPage());
         commandItems.add(new AliasExecute());
+        commandItems.add(new AliasUpdate());
         setCommandItems(commandItems);
     }
 
@@ -274,6 +275,49 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
             List<Row> aliases = mapEntitiesToRows(entities);
 
             return PaginationUtils.buildPage(new DefaultHeader(page, maxPageNumber), aliases, null).toString();
+        }
+    }
+
+    private class AliasUpdate extends CommandItem {
+
+        public AliasUpdate() {
+            super(new ArgumentsTemplate("rename", new StringArgumentMatcher(), new StringArgumentMatcher()));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.alias.update.args"),
+                    resources.getString("description.command.alias.update.desc")
+            );
+            return description;
+        }
+
+        @Override
+        public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            String oldName = arguments.get(1).getArgument();
+            String newName = arguments.get(2).getArgument();
+
+            AliasRepository repository = new AliasRepositoryImpl();
+
+            try {
+                int deleted = repository.updateAliasName(new AliasSpecificationByNameAndGuildId(oldName, event.getGuild().getIdLong()), newName);
+                if (deleted == 0) {
+                    return resources.getString("message.command.alias.update.not_found");
+                } else {
+                    return resources.getString("message.command.alias.update.successful");
+                }
+            } catch (Throwable e) {
+                if (e.getCause() instanceof ConstraintViolationException) {
+                    return resources.getString("message.command.alias.update.exists");
+                } else {
+                    System.out.println(e);
+                    logger.error("Failed to update playlist", e);
+                    return resources.getString("message.command.alias.update.failed");
+                }
+            }
         }
     }
 

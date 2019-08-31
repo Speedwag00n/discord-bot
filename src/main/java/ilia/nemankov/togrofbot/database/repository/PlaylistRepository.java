@@ -9,7 +9,7 @@ public interface PlaylistRepository {
 
     void addPlaylist(PlaylistEntity entity);
     int removePlaylist(PlaylistEntity entity);
-    void updatePlaylist(PlaylistEntity entity);
+    int updatePlaylistName(HibernateSpecification specification, String name);
 
     long count(HibernateSpecification specification);
     long count(HibernateSpecification specification, QuerySettings settings);

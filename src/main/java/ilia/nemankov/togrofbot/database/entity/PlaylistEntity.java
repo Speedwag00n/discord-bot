@@ -61,6 +61,7 @@ public class PlaylistEntity {
     private List<MusicLinkEntity> links;
 
     @Column(name = "creation_datetime")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date creationDatetime;
 
 }

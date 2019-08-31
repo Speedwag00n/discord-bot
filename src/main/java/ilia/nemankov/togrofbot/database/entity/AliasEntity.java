@@ -36,6 +36,7 @@ public class AliasEntity {
     private String command;
 
     @Column(name = "creation_datetime")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date creationDatetime;
 
 }
