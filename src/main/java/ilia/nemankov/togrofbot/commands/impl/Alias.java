@@ -14,7 +14,8 @@ import ilia.nemankov.togrofbot.database.repository.AliasRepository;
 import ilia.nemankov.togrofbot.database.repository.QuerySettings;
 import ilia.nemankov.togrofbot.database.repository.impl.AliasRepositoryImpl;
 import ilia.nemankov.togrofbot.database.specification.impl.AliasSpecificationByGuildId;
-import ilia.nemankov.togrofbot.database.specification.impl.AliasSpecificationByNameAndGuildId;
+import ilia.nemankov.togrofbot.database.specification.impl.AliasSpecificationByName;
+import ilia.nemankov.togrofbot.database.specification.impl.composite.AndSpecification;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
 import ilia.nemankov.togrofbot.util.pagination.header.impl.DefaultHeader;
@@ -143,7 +144,12 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
             String name = arguments.get(0).getArgument();
 
             AliasRepository repository = new AliasRepositoryImpl();
-            List<AliasEntity> entities = repository.query(new AliasSpecificationByNameAndGuildId(name, event.getGuild().getIdLong()), "alias-entity");
+            List<AliasEntity> entities = repository.query(
+                    new AndSpecification<>(
+                            new AliasSpecificationByName(name),
+                            new AliasSpecificationByGuildId(event.getGuild().getIdLong())
+                    ),
+                    "alias-entity");
 
             if (entities.isEmpty()) {
                 return resources.getString("message.command.alias.not_found");
@@ -301,7 +307,12 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
             AliasRepository repository = new AliasRepositoryImpl();
 
             try {
-                int deleted = repository.updateAliasName(new AliasSpecificationByNameAndGuildId(oldName, event.getGuild().getIdLong()), newName);
+                int deleted = repository.updateAliasName(
+                        new AndSpecification<>(
+                                new AliasSpecificationByName(oldName),
+                                new AliasSpecificationByGuildId(event.getGuild().getIdLong())
+                        ),
+                        newName);
                 if (deleted == 0) {
                     return resources.getString("message.command.alias.update.not_found");
                 } else {

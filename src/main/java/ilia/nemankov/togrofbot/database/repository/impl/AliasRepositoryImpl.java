@@ -3,7 +3,7 @@ package ilia.nemankov.togrofbot.database.repository.impl;
 import ilia.nemankov.togrofbot.database.entity.AliasEntity;
 import ilia.nemankov.togrofbot.database.repository.AliasRepository;
 import ilia.nemankov.togrofbot.database.repository.QuerySettings;
-import ilia.nemankov.togrofbot.database.specification.HibernateSpecification;
+import ilia.nemankov.togrofbot.database.specification.Specification;
 import ilia.nemankov.togrofbot.util.HibernateUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -52,7 +52,7 @@ public class AliasRepositoryImpl implements AliasRepository {
     }
 
     @Override
-    public int updateAliasName(HibernateSpecification specification, String name) {
+    public int updateAliasName(Specification specification, String name) {
         Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
@@ -74,12 +74,12 @@ public class AliasRepositoryImpl implements AliasRepository {
     }
 
     @Override
-    public long count(HibernateSpecification specification) {
+    public long count(Specification specification) {
         return this.count(specification, null);
     }
 
     @Override
-    public long count(HibernateSpecification specification, QuerySettings settings) {
+    public long count(Specification specification, QuerySettings settings) {
         Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
@@ -105,12 +105,12 @@ public class AliasRepositoryImpl implements AliasRepository {
     }
 
     @Override
-    public List<AliasEntity> query(HibernateSpecification specification, String graphName) {
+    public List<AliasEntity> query(Specification specification, String graphName) {
         return this.query(specification, graphName, null);
     }
 
     @Override
-    public List<AliasEntity> query(HibernateSpecification specification, String graphName, QuerySettings settings) {
+    public List<AliasEntity> query(Specification specification, String graphName, QuerySettings settings) {
         Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 

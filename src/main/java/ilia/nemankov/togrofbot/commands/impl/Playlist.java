@@ -19,7 +19,8 @@ import ilia.nemankov.togrofbot.database.repository.impl.MusicLinkRepositoryImpl;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
 import ilia.nemankov.togrofbot.database.specification.impl.MusicLinkSpecificationByPlaylist;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByGuildId;
-import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByNameAndGuildId;
+import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByName;
+import ilia.nemankov.togrofbot.database.specification.impl.composite.AndSpecification;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import ilia.nemankov.togrofbot.util.LinkUtils;
 import ilia.nemankov.togrofbot.util.VoiceUtils;
@@ -238,7 +239,12 @@ public class Playlist extends AbstractCommand {
             String playlist = arguments.get(1).getArgument();
 
             PlaylistRepository repository = new PlaylistRepositoryImpl();
-            List<PlaylistEntity> playlistEntities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()), "playlist-entity.with-links");
+            List<PlaylistEntity> playlistEntities = repository.query(
+                    new AndSpecification<>(
+                            new PlaylistSpecificationByName(playlist),
+                            new PlaylistSpecificationByGuildId(event.getGuild().getIdLong())
+                    ),
+                    "playlist-entity.with-links");
             if (playlistEntities.isEmpty()) {
                 return resources.getString("message.command.playlist.not_found");
             }
@@ -282,7 +288,12 @@ public class Playlist extends AbstractCommand {
             int fromTrack = ((NumberArgument)arguments.get(2)).getNumberArgument().intValue();
 
             PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
-            List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()), "playlist-entity.without-links");
+            List<PlaylistEntity> playlistEntities = playlistRepository.query(
+                    new AndSpecification<>(
+                            new PlaylistSpecificationByName(playlist),
+                            new PlaylistSpecificationByGuildId(event.getGuild().getIdLong())
+                    ),
+                    "playlist-entity.without-links");
             if (playlistEntities.isEmpty()) {
                 return resources.getString("message.command.playlist.not_found");
             }
@@ -342,7 +353,12 @@ public class Playlist extends AbstractCommand {
             PlaylistRepository repository = new PlaylistRepositoryImpl();
 
             try {
-                int deleted = repository.updatePlaylistName(new PlaylistSpecificationByNameAndGuildId(oldName, event.getGuild().getIdLong()), newName);
+                int deleted = repository.updatePlaylistName(
+                        new AndSpecification<>(
+                                new PlaylistSpecificationByName(oldName),
+                                new PlaylistSpecificationByGuildId(event.getGuild().getIdLong())
+                        ),
+                        newName);
                 if (deleted == 0) {
                     return resources.getString("message.command.playlist.update.not_found");
                 } else {

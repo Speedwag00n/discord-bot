@@ -1,19 +1,21 @@
 package ilia.nemankov.togrofbot.database.specification.impl;
 
 import ilia.nemankov.togrofbot.database.entity.PlaylistEntity;
-import ilia.nemankov.togrofbot.database.specification.HibernateSpecification;
-import org.hibernate.criterion.Restrictions;
+import ilia.nemankov.togrofbot.database.specification.AbstractSpecification;
+import lombok.AllArgsConstructor;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-public class PlaylistSpecificationByGuildId implements HibernateSpecification<PlaylistEntity> {
+@AllArgsConstructor
+public class PlaylistSpecificationByGuildId extends AbstractSpecification<PlaylistEntity> {
 
     private Long guildId;
 
-    public PlaylistSpecificationByGuildId(Long guildId) {
-        this.guildId = guildId;
+    @Override
+    public boolean isSatisfiedBy(PlaylistEntity entity) {
+        return entity.getGuildId() == guildId.longValue();
     }
 
     @Override
