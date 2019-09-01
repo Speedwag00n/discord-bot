@@ -27,10 +27,9 @@ import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
 import ilia.nemankov.togrofbot.util.pagination.header.impl.DefaultHeader;
 import ilia.nemankov.togrofbot.util.pagination.row.Row;
 import ilia.nemankov.togrofbot.util.pagination.row.impl.MarkedRow;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.hibernate.exception.ConstraintViolationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -39,9 +38,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class Playlist extends AbstractCommand {
-
-    private static final Logger logger = LoggerFactory.getLogger(Playlist.class);
 
     private static final String[] variants = new String[] {"playlist", "pl"};
 
@@ -100,7 +98,7 @@ public class Playlist extends AbstractCommand {
                 if (e instanceof ConstraintViolationException) {
                     return resources.getString("message.command.playlist.create.exists");
                 } else {
-                    logger.error("Failed to create playlist", e);
+                    log.error("Failed to create playlist", e);
                     return resources.getString("message.command.playlist.create.failed");
                 }
             }
@@ -355,7 +353,7 @@ public class Playlist extends AbstractCommand {
                     return resources.getString("message.command.playlist.update.exists");
                 } else {
                     System.out.println(e);
-                    logger.error("Failed to update playlist", e);
+                    log.error("Failed to update playlist", e);
                     return resources.getString("message.command.playlist.update.failed");
                 }
             }
@@ -373,7 +371,7 @@ public class Playlist extends AbstractCommand {
 
     private List<PlaylistEntity> getPlaylistsFromDB(int page, int itemsOnPage, long guildId) {
         if (page <= 0 || itemsOnPage <= 0 || guildId < 0) {
-            logger.error("Received invalid args: page={}, itemsOnPage={}, guildId={}", page, itemsOnPage, guildId);
+            log.error("Received invalid args: page={}, itemsOnPage={}, guildId={}", page, itemsOnPage, guildId);
             throw new IllegalArgumentException();
         }
         PlaylistRepository repository = new PlaylistRepositoryImpl();

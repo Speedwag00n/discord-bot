@@ -2,18 +2,16 @@ package ilia.nemankov.togrofbot.util;
 
 import ilia.nemankov.togrofbot.audio.*;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.managers.AudioManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ResourceBundle;
 
+@Slf4j
 public class VoiceUtils {
-
-    private static final Logger logger = LoggerFactory.getLogger(VoiceUtils.class);
 
     public enum AudioType {
 
@@ -71,7 +69,7 @@ public class VoiceUtils {
                 }
                 break;
                 default:
-                    logger.error("Unexpected audio type {}", type);
+                    log.error("Unexpected audio type {}", type);
                     break;
         }
 

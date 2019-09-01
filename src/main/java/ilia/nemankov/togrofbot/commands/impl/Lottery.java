@@ -8,8 +8,6 @@ import ilia.nemankov.togrofbot.commands.parsing.matching.ArgumentsTemplate;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -18,8 +16,6 @@ import java.util.Random;
 import java.util.ResourceBundle;
 
 public class Lottery extends AbstractCommand {
-
-    private static final Logger logger = LoggerFactory.getLogger(Lottery.class);
 
     private static final String[] variants = new String[] {"lottery", "lot"};
 

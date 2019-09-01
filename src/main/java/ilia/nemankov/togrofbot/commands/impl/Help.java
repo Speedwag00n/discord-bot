@@ -12,9 +12,8 @@ import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
 import ilia.nemankov.togrofbot.util.pagination.header.impl.DefaultHeader;
 import ilia.nemankov.togrofbot.util.pagination.row.Row;
 import ilia.nemankov.togrofbot.util.pagination.row.impl.MarkedRow;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -22,9 +21,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 
+@Slf4j
 public class Help extends AbstractCommand {
-
-    private static final Logger logger = LoggerFactory.getLogger(Help.class);
 
     private static final String[] variants = new String[] {"help", "h"};
 
@@ -169,7 +167,7 @@ public class Help extends AbstractCommand {
 
     private List<Row> mapEntitiesToRows(List<Command> commands, int count, int offset) {
         if (count <= 0 || offset < 0) {
-            logger.error("Received invalid args: count={}, offset={}", count, offset);
+            log.error("Received invalid args: count={}, offset={}", count, offset);
             throw new IllegalArgumentException();
         }
         List<Row> rows = new ArrayList<>();

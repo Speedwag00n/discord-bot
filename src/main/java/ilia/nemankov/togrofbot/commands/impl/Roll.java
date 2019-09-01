@@ -8,10 +8,9 @@ import ilia.nemankov.togrofbot.commands.parsing.argument.NumberArgument;
 import ilia.nemankov.togrofbot.commands.parsing.matching.ArgumentsTemplate;
 import ilia.nemankov.togrofbot.commands.parsing.matching.NumberArgumentMatcher;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -19,9 +18,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.ResourceBundle;
 
+@Slf4j
 public class Roll extends AbstractCommand {
-
-    private static final Logger logger = LoggerFactory.getLogger(Roll.class);
 
     private static final String[] variants = new String[] {"roll"};
 
@@ -97,7 +95,7 @@ public class Roll extends AbstractCommand {
 
     private String generateResult(int bottomBorder, int topBorder, User author) {
         if (bottomBorder < 0 || topBorder < 0) {
-            logger.error("Received invalid args: bottomBorder={}, topBorder={}", bottomBorder, topBorder);
+            log.error("Received invalid args: bottomBorder={}, topBorder={}", bottomBorder, topBorder);
             throw new IllegalArgumentException();
         }
         ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());

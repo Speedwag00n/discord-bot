@@ -1,19 +1,17 @@
 package ilia.nemankov.togrofbot.commands.parsing;
 
 import ilia.nemankov.togrofbot.commands.parsing.argument.DefaultArgument;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class DefaultCommandParser implements CommandParser {
-
-    private static final Logger logger = LoggerFactory.getLogger(DefaultCommandParser.class);
 
     @Override
     public ParsedCommand parse(String command) {
-        logger.trace("Started parse command line \"{}}\"", command);
+        log.trace("Started parse command line \"{}}\"", command);
 
         List<String> items = new ArrayList<>();
         boolean closed = true;
@@ -61,7 +59,7 @@ public class DefaultCommandParser implements CommandParser {
             parsedCommand.addArgument(new DefaultArgument(items.get(i)));
         }
 
-        logger.trace("Finished parse command. Parse command \"{}\" contains {} arguments", parsedCommand.getCommandName(), parsedCommand.getArguments().size());
+        log.trace("Finished parse command. Parse command \"{}\" contains {} arguments", parsedCommand.getCommandName(), parsedCommand.getArguments().size());
         return parsedCommand;
     }
 

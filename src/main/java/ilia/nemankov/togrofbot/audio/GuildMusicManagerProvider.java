@@ -3,20 +3,18 @@ package ilia.nemankov.togrofbot.audio;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.core.entities.Guild;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 
+@Slf4j
 public class GuildMusicManagerProvider {
-
-    private static final Logger logger = LoggerFactory.getLogger(GuildMusicManagerProvider.class);
 
     private static GuildMusicManagerProvider instance;
     static {
         instance = new GuildMusicManagerProvider();
-        logger.debug("Created {} class instance", GuildMusicManagerProvider.class.getSimpleName());
+        log.debug("Created {} class instance", GuildMusicManagerProvider.class.getSimpleName());
     }
 
     private HashMap<Long, GuildMusicManager> managers;
@@ -40,7 +38,7 @@ public class GuildMusicManagerProvider {
         if (musicManager == null) {
             musicManager = new GuildMusicManager(playerManager);
             managers.put(guildId, musicManager);
-            logger.debug("Created {} for Guild with id {}", musicManager.getClass().getSimpleName(), guild.getId());
+            log.debug("Created {} for Guild with id {}", musicManager.getClass().getSimpleName(), guild.getId());
         }
 
         guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());

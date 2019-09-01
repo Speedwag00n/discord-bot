@@ -10,8 +10,6 @@ import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
 import ilia.nemankov.togrofbot.commands.parsing.matching.ArgumentsTemplate;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -19,8 +17,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class Now extends AbstractCommand {
-
-    private static final Logger logger = LoggerFactory.getLogger(Now.class);
 
     private static final String[] variants = new String[] {"now"};
 

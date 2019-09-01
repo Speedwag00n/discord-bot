@@ -20,12 +20,11 @@ import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
 import ilia.nemankov.togrofbot.util.pagination.header.impl.DefaultHeader;
 import ilia.nemankov.togrofbot.util.pagination.row.Row;
 import ilia.nemankov.togrofbot.util.pagination.row.impl.MarkedRow;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.core.entities.impl.AbstractMessage;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.hibernate.exception.ConstraintViolationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.text.MessageFormat;
@@ -35,9 +34,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class Alias extends AbstractCommand implements ExecutingCommand {
-
-    private static final Logger logger = LoggerFactory.getLogger(Alias.class);
 
     private static final String[] variants = new String[] {"alias", "al", "a"};
 
@@ -116,7 +114,7 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
                 if (e instanceof ConstraintViolationException) {
                     return resources.getString("message.command.alias.add.exists");
                 } else {
-                    logger.error("Failed to create alias", e);
+                    log.error("Failed to create alias", e);
                     return resources.getString("message.command.alias.add.failed");
                 }
             }
@@ -155,14 +153,14 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
                 field.setAccessible(true);
                 field.set(event.getMessage(), SettingsProvider.getInstance().getCommandPrefix() + entities.get(0).getCommand());
             } catch (NoSuchFieldException | IllegalAccessException e) {
-                logger.error("Failed to execute alias", e);
+                log.error("Failed to execute alias", e);
                 return resources.getString("message.command.alias.execute.failed");
             }
             if (adapter != null) {
                 adapter.onGuildMessageReceived(event);
                 return null;
             } else {
-                logger.error("Failed to execute alias");
+                log.error("Failed to execute alias");
                 return resources.getString("message.command.alias.execute.failed");
             }
         }
@@ -314,7 +312,7 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
                     return resources.getString("message.command.alias.update.exists");
                 } else {
                     System.out.println(e);
-                    logger.error("Failed to update playlist", e);
+                    log.error("Failed to update playlist", e);
                     return resources.getString("message.command.alias.update.failed");
                 }
             }
@@ -337,7 +335,7 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
 
     private int getMaxPageNumber(long guildId, int itemsOnPage) {
         if (guildId < 0 || itemsOnPage <= 0) {
-            logger.error("Received invalid args: guildId={}, itemsOnPage={}", guildId, itemsOnPage);
+            log.error("Received invalid args: guildId={}, itemsOnPage={}", guildId, itemsOnPage);
             throw new IllegalArgumentException();
         }
         AliasRepository repository = new AliasRepositoryImpl();
@@ -347,7 +345,7 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
 
     private List<AliasEntity> getAliasesFromDB(int page, int itemsOnPage, long guildId) {
         if (page <= 0 || itemsOnPage <= 0 || guildId < 0) {
-            logger.error("Received invalid args: page={}, itemsOnPage={}, guildId={}", page, itemsOnPage, guildId);
+            log.error("Received invalid args: page={}, itemsOnPage={}, guildId={}", page, itemsOnPage, guildId);
             throw new IllegalArgumentException();
         }
         AliasRepository repository = new AliasRepositoryImpl();

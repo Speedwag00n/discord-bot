@@ -27,12 +27,10 @@ import ilia.nemankov.togrofbot.util.LinkUtils;
 import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
 import ilia.nemankov.togrofbot.util.pagination.header.impl.DefaultHeader;
 import ilia.nemankov.togrofbot.util.pagination.row.IndexedRow;
-import ilia.nemankov.togrofbot.util.pagination.row.Row;
 import ilia.nemankov.togrofbot.util.pagination.row.impl.DefaultIndexedRow;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.hibernate.exception.ConstraintViolationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -41,9 +39,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class Music extends AbstractCommand {
-
-    private static final Logger logger = LoggerFactory.getLogger(Music.class);
 
     private static final String[] variants = new String[] {"music", "m"};
 
@@ -108,7 +105,7 @@ public class Music extends AbstractCommand {
                 if (e.getCause() instanceof ConstraintViolationException) {
                     return resources.getString("message.command.music.add.exists");
                 } else {
-                    logger.error("Failed to add track", e);
+                    log.error("Failed to add track", e);
                     return resources.getString("error.command.music.add.failed");
                 }
             }
@@ -119,7 +116,7 @@ public class Music extends AbstractCommand {
 
             if (scheduler.getPlayingNow() != null && playlist.equals(scheduler.getPlaylist())) {
                 provider.getPlayerManager().loadItem(link, new MusicAudioLoader(scheduler));
-                logger.debug("Adding track pushed to playing playlist queue");
+                log.debug("Adding track pushed to playing playlist queue");
             }
 
             return MessageFormat.format(
@@ -323,7 +320,7 @@ public class Music extends AbstractCommand {
 
     private List<MusicLinkEntity> getMusicLinksFromDB(int from, int count, long guildId, String playlistName) {
         if (from < 0 || count <= 0 || guildId < 0) {
-            logger.error("Received invalid args: from={}, count={}, guildId={}", from, count, guildId);
+            log.error("Received invalid args: from={}, count={}, guildId={}", from, count, guildId);
             throw new IllegalArgumentException();
         }
         PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();

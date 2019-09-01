@@ -4,12 +4,10 @@ import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class EmotionAudioLoader extends AbstractAudioLoader implements AudioLoadResultHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(EmotionAudioLoader.class);
 
     public EmotionAudioLoader(Scheduler scheduler) {
         super(scheduler);
@@ -19,9 +17,9 @@ public class EmotionAudioLoader extends AbstractAudioLoader implements AudioLoad
     public void trackLoaded(AudioTrack track) {
         if (getScheduler().isEmpty() && (getScheduler().getPlayingNow() == null)) {
             getScheduler().queue(track);
-            logger.debug("Started playing emotion \"{}\"", track.getIdentifier());
+            log.debug("Started playing emotion \"{}\"", track.getIdentifier());
         } else {
-            logger.debug("Scheduler queue isn't empty, could not play emotion \"{}\"", track.getIdentifier());
+            log.debug("Scheduler queue isn't empty, could not play emotion \"{}\"", track.getIdentifier());
         }
     }
 
@@ -39,7 +37,7 @@ public class EmotionAudioLoader extends AbstractAudioLoader implements AudioLoad
 
     @Override
     public void loadFailed(FriendlyException throwable) {
-        logger.debug("Failed to load bot audio emotion", throwable);
+        log.debug("Failed to load bot audio emotion", throwable);
     }
 
 }

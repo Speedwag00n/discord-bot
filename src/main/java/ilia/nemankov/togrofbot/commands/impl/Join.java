@@ -9,16 +9,12 @@ import ilia.nemankov.togrofbot.commands.parsing.matching.ArgumentsTemplate;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import ilia.nemankov.togrofbot.util.VoiceUtils;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
 public class Join extends AbstractCommand {
-
-    private static final Logger logger = LoggerFactory.getLogger(Join.class);
 
     private static final String[] variants = new String[] {"join", "j"};
 

@@ -4,9 +4,8 @@ import ilia.nemankov.togrofbot.commands.parsing.CommandVariantDescription;
 import ilia.nemankov.togrofbot.commands.parsing.argument.Argument;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -15,9 +14,8 @@ import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 @Setter
+@Slf4j
 public abstract class AbstractCommand implements Command {
-
-    private static final Logger logger = LoggerFactory.getLogger(AbstractCommand.class);
 
     private List<CommandItem> commandItems;
 
@@ -45,7 +43,7 @@ public abstract class AbstractCommand implements Command {
         SettingsProvider settingsProvider = SettingsProvider.getInstance();
         for (CommandItem item : commandItems) {
             if (item.getArgumentsTemplate() == null || item.getArgumentsTemplate().validate(arguments)) {
-                logger.debug("Selected {} item", item.getClass().getSimpleName());
+                log.debug("Selected {} item", item.getClass().getSimpleName());
                 return item.execute(event, arguments);
             }
         }

@@ -6,18 +6,16 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import ilia.nemankov.togrofbot.util.MessageUtils;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.core.entities.TextChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+@Slf4j
 public class TrackScheduler extends AudioEventAdapter implements CommunicationScheduler {
-
-    private static final Logger logger = LoggerFactory.getLogger(TrackScheduler.class);
 
     private final AudioPlayer player;
     private final BlockingQueue<AudioTrack> queue;
@@ -34,7 +32,7 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
     public void queue(AudioTrack track) {
         if (!player.startTrack(track, true)) {
             queue.offer(track);
-            logger.debug("Added a track with identifier \"{}\" to the queue", track.getIdentifier());
+            log.debug("Added a track with identifier \"{}\" to the queue", track.getIdentifier());
         } else {
             //Track started playing because the queue was empty
             if (communicationChannel != null) {
@@ -57,7 +55,7 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
         if (track != null) {
             if (result) {
                 playingNow = track;
-                logger.debug("Started a track \"{}\"", track.getIdentifier());
+                log.debug("Started a track \"{}\"", track.getIdentifier());
                 if (communicationChannel != null) {
                     ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
                     MessageUtils.sendTextResponse(
@@ -70,7 +68,7 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
             } else {
                 playingNow = null;
                 playlist = null;
-                logger.debug("Could not start a track \"{}\"", track.getIdentifier());
+                log.debug("Could not start a track \"{}\"", track.getIdentifier());
                 if (communicationChannel != null) {
                     ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
                     MessageUtils.sendTextResponse(
@@ -86,14 +84,14 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
             playingNow = null;
             communicationChannel = null;
             playlist = null;
-            logger.debug("Nothing to play");
+            log.debug("Nothing to play");
         }
     }
 
     @Override
     public void clear(AudioTrack track) {
         queue.remove(track);
-        logger.debug("Delete track with identifier {} from scheduler queue", track.getIdentifier());
+        log.debug("Delete track with identifier {} from scheduler queue", track.getIdentifier());
     }
 
     @Override
@@ -101,7 +99,7 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
         queue.clear();
         playingNow = null;
         playlist = null;
-        logger.debug("Track scheduler queue cleared");
+        log.debug("Track scheduler queue cleared");
     }
 
     @Override
@@ -125,7 +123,7 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
         if (endReason.mayStartNext) {
-            logger.debug("Ended a track \"{}\". Starting next", track.getIdentifier());
+            log.debug("Ended a track \"{}\". Starting next", track.getIdentifier());
             next();
         }
     }

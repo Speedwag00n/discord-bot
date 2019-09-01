@@ -1,15 +1,13 @@
 package ilia.nemankov.togrofbot.commands;
 
 import ilia.nemankov.togrofbot.commands.impl.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class CommandManagerMainImpl implements CommandManager {
-
-    private static final Logger logger = LoggerFactory.getLogger(CommandManagerMainImpl.class);
 
     private static CommandManagerMainImpl instance;
 
@@ -17,27 +15,27 @@ public class CommandManagerMainImpl implements CommandManager {
 
     private CommandManagerMainImpl() {
         commands = new ArrayList<>();
-        
+
+        addCommand(new Help());
+        addCommand(new Variants());
+        addCommand(new Play());
+        addCommand(new Playlist());
+        addCommand(new Music());
+        addCommand(new Skip());
+        addCommand(new Now());
+        addCommand(new Join());
+        addCommand(new Leave());
+        addCommand(new Alias());
         addCommand(new Roll());
         addCommand(new Lottery());
-        addCommand(new Help());
-        addCommand(new Join());
-        addCommand(new Playlist());
-        addCommand(new Skip());
-        addCommand(new Music());
-        addCommand(new Alias());
         addCommand(new Summon());
-        addCommand(new Leave());
-        addCommand(new Play());
-        addCommand(new Variants());
-        addCommand(new Now());
 
-        logger.debug("Initialized map of commands");
+        log.debug("Initialized map of commands");
     }
 
     public static CommandManager getInstance() {
         if (instance == null){
-            logger.debug("Created {} class instance", CommandManagerMainImpl.class.getSimpleName());
+            log.debug("Created {} class instance", CommandManagerMainImpl.class.getSimpleName());
             instance = new CommandManagerMainImpl();
         }
         return instance;
