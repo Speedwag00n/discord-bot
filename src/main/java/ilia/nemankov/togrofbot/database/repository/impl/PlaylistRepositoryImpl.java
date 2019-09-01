@@ -9,7 +9,10 @@ import org.hibernate.Transaction;
 
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
+import javax.persistence.criteria.CriteriaUpdate;
+import javax.persistence.criteria.Root;
 
 public class PlaylistRepositoryImpl implements PlaylistRepository {
 
@@ -68,21 +71,13 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Override
-    public int updatePlaylistName(Specification specification, String name) {
+    public void updatePlaylist(PlaylistEntity entity) {
         Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
-        CriteriaBuilder builder = session.getCriteriaBuilder();
-        CriteriaUpdate<PlaylistEntity> criteria = builder.createCriteriaUpdate(PlaylistEntity.class);
-
-        Root<PlaylistEntity> root = criteria.from(PlaylistEntity.class);
-        criteria.set(root.get("name"), name).where(specification.getPredicate(builder, root));
-
-        TypedQuery<Long> query = session.createQuery(criteria);
         try {
-            int updated = query.executeUpdate();
+            session.update(entity);
             transaction.commit();
-            return updated;
         } catch (Exception e) {
             transaction.rollback();
             throw e;

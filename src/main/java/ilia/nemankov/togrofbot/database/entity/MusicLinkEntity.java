@@ -1,7 +1,9 @@
 package ilia.nemankov.togrofbot.database.entity;
 
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.annotation.concurrent.Immutable;
 import javax.persistence.*;
@@ -20,7 +22,9 @@ import java.util.Date;
 @Entity
 @Table(name = "music_link")
 @Immutable
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(exclude = {"playlist"})
 @NoArgsConstructor
 public class MusicLinkEntity implements Serializable {
 

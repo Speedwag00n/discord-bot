@@ -10,6 +10,6 @@ public interface AliasRepository extends Repository<AliasEntity> {
     boolean removeAlias(AliasEntity entity);
     long removeAliases(Specification<AliasEntity> specification);
 
-    int updateAliasName(Specification specification, String name);
+    void updateAlias(AliasEntity entity);
 
 }

@@ -1,7 +1,9 @@
 package ilia.nemankov.togrofbot.database.entity;
 
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -17,7 +19,9 @@ import java.util.Date;
 )
 @Entity
 @Table(name = "alias")
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
 @NoArgsConstructor
 public class AliasEntity {
 

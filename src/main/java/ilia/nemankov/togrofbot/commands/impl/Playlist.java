@@ -352,24 +352,26 @@ public class Playlist extends AbstractCommand {
             String newName = arguments.get(2).getArgument();
 
             PlaylistRepository repository = new PlaylistRepositoryImpl();
+            List<PlaylistEntity> entities = repository.query(
+                    new AndSpecification<>(
+                            new PlaylistSpecificationByName(oldName),
+                            new PlaylistSpecificationByGuildId(event.getGuild().getIdLong())
+                    ),
+                    "playlist-entity.without-links"
+            );
+            if (entities.isEmpty()) {
+                return resources.getString("message.command.playlist.update.not_found");
+            }
+            PlaylistEntity updatingPlaylist = entities.get(0);
+            updatingPlaylist.setName(newName);
 
             try {
-                int deleted = repository.updatePlaylistName(
-                        new AndSpecification<>(
-                                new PlaylistSpecificationByName(oldName),
-                                new PlaylistSpecificationByGuildId(event.getGuild().getIdLong())
-                        ),
-                        newName);
-                if (deleted == 0) {
-                    return resources.getString("message.command.playlist.update.not_found");
-                } else {
-                    return resources.getString("message.command.playlist.update.successful");
-                }
+                repository.updatePlaylist(updatingPlaylist);
+                return resources.getString("message.command.playlist.update.successful");
             } catch (Throwable e) {
                 if (e.getCause() instanceof ConstraintViolationException) {
                     return resources.getString("message.command.playlist.update.exists");
                 } else {
-                    System.out.println(e);
                     log.error("Failed to update playlist", e);
                     return resources.getString("message.command.playlist.update.failed");
                 }

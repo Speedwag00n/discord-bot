@@ -10,6 +10,6 @@ public interface PlaylistRepository extends Repository<PlaylistEntity> {
     boolean removePlaylist(PlaylistEntity entity);
     long removePlaylists(Specification<PlaylistEntity> specification);
 
-    int updatePlaylistName(Specification<PlaylistEntity> specification, String name);
+    void updatePlaylist(PlaylistEntity entity);
 
 }

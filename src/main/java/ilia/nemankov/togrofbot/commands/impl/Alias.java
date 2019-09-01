@@ -306,24 +306,26 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
             String newName = arguments.get(2).getArgument();
 
             AliasRepository repository = new AliasRepositoryImpl();
+            List<AliasEntity> entities = repository.query(
+                    new AndSpecification<>(
+                            new AliasSpecificationByName(oldName),
+                            new AliasSpecificationByGuildId(event.getGuild().getIdLong())
+                    ),
+                    "alias-entity"
+            );
+            if (entities.isEmpty()) {
+                return resources.getString("message.command.alias.update.not_found");
+            }
+            AliasEntity updatingAlias = entities.get(0);
+            updatingAlias.setName(newName);
 
             try {
-                int deleted = repository.updateAliasName(
-                        new AndSpecification<>(
-                                new AliasSpecificationByName(oldName),
-                                new AliasSpecificationByGuildId(event.getGuild().getIdLong())
-                        ),
-                        newName);
-                if (deleted == 0) {
-                    return resources.getString("message.command.alias.update.not_found");
-                } else {
-                    return resources.getString("message.command.alias.update.successful");
-                }
+                repository.updateAlias(updatingAlias);
+                return resources.getString("message.command.alias.update.successful");
             } catch (Throwable e) {
                 if (e.getCause() instanceof ConstraintViolationException) {
                     return resources.getString("message.command.alias.update.exists");
                 } else {
-                    System.out.println(e);
                     log.error("Failed to update playlist", e);
                     return resources.getString("message.command.alias.update.failed");
                 }

@@ -71,21 +71,13 @@ public class AliasRepositoryImpl implements AliasRepository {
     }
 
     @Override
-    public int updateAliasName(Specification specification, String name) {
+    public void updateAlias(AliasEntity entity) {
         Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
-        CriteriaBuilder builder = session.getCriteriaBuilder();
-        CriteriaUpdate<AliasEntity> criteria = builder.createCriteriaUpdate(AliasEntity.class);
-
-        Root<AliasEntity> root = criteria.from(AliasEntity.class);
-        criteria.set(root.get("name"), name).where(specification.getPredicate(builder, root));
-
-        TypedQuery<Long> query = session.createQuery(criteria);
         try {
-            int updated = query.executeUpdate();
+            session.update(entity);
             transaction.commit();
-            return updated;
         } catch (Exception e) {
             transaction.rollback();
             throw e;
