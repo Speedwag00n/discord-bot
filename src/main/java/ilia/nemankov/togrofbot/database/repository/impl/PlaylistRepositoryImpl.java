@@ -9,9 +9,7 @@ import org.hibernate.Transaction;
 
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaUpdate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 
 public class PlaylistRepositoryImpl implements PlaylistRepository {
 
@@ -30,18 +28,39 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Override
-    public int removePlaylist(PlaylistEntity entity) {
+    public boolean removePlaylist(PlaylistEntity entity) {
         Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
-        Query query = session.createQuery("DELETE PlaylistEntity WHERE name = :paramName and guildId = :paramGuildId");
-        query.setParameter("paramName", entity.getName());
-        query.setParameter("paramGuildId", entity.getGuildId());
+        Query query = session.createQuery("DELETE PlaylistEntity WHERE id = :paramId");
+        query.setParameter("paramId", entity.getId());
 
         try {
             int deleted = query.executeUpdate();
             transaction.commit();
-            return deleted;
+            return deleted != 0;
+        } catch (Exception e) {
+            transaction.rollback();
+            throw e;
+        }
+    }
+
+    @Override
+    public long removePlaylists(Specification<PlaylistEntity> specification) {
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaDelete<PlaylistEntity> delete = builder.createCriteriaDelete(specification.getType());
+
+        Root<PlaylistEntity> root = delete.from(specification.getType());
+        delete.where(specification.getPredicate(builder, root));
+
+        TypedQuery<Long> query = session.createQuery(delete);
+        try {
+            long result = query.executeUpdate();
+            transaction.commit();
+            return result;
         } catch (Exception e) {
             transaction.rollback();
             throw e;

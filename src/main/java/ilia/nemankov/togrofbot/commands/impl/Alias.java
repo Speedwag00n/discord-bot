@@ -193,12 +193,13 @@ public class Alias extends AbstractCommand implements ExecutingCommand {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
             String name = arguments.get(1).getArgument();
 
-            AliasEntity entity = new AliasEntity();
-            entity.setName(name);
-            entity.setGuildId(event.getGuild().getIdLong());
-
             AliasRepositoryImpl repository = new AliasRepositoryImpl();
-            if (repository.removeAlias(entity) == 0) {
+            if (repository.removeAliases(
+                    new AndSpecification<>(
+                            new AliasSpecificationByName(name),
+                            new AliasSpecificationByGuildId(event.getGuild().getIdLong())
+                    )
+            ) == 0) {
                 return resources.getString("message.command.alias.not_found");
             } else {
                 return MessageFormat.format(

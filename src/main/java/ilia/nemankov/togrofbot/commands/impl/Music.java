@@ -20,9 +20,7 @@ import ilia.nemankov.togrofbot.database.repository.PlaylistRepository;
 import ilia.nemankov.togrofbot.database.repository.QuerySettings;
 import ilia.nemankov.togrofbot.database.repository.impl.MusicLinkRepositoryImpl;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
-import ilia.nemankov.togrofbot.database.specification.impl.MusicLinkSpecificationByPlaylist;
-import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByGuildId;
-import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByName;
+import ilia.nemankov.togrofbot.database.specification.impl.*;
 import ilia.nemankov.togrofbot.database.specification.impl.composite.AndSpecification;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
 import ilia.nemankov.togrofbot.util.LinkUtils;
@@ -268,13 +266,16 @@ public class Music extends AbstractCommand {
                 return resources.getString("message.command.music.remove.incorrect_link");
             }
 
-            MusicLinkEntity entity = new MusicLinkEntity();
-            entity.setIdentifier(videoInfo.getIdentifier());
-            entity.setPlaylist(playlistEntities.get(0));
-            entity.setSource(videoInfo.getSource());
-
             MusicLinkRepository musicLinkRepository = new MusicLinkRepositoryImpl();
-            if (musicLinkRepository.removeMusicLink(entity) == 0) {
+            if (musicLinkRepository.removeMusicLinks(
+                    new AndSpecification<>(
+                            new AndSpecification<>(
+                                    new MusicLinkSpecificationByIdentifier(videoInfo.getIdentifier()),
+                                    new MusicLinkSpecificationByPlaylist(playlistEntities.get(0))
+                            ),
+                            new MusicLinkSpecificationBySource(videoInfo.getSource())
+                    )
+            ) == 0) {
                 return resources.getString("message.command.music.remove.track_not_found");
             } else {
                 return MessageFormat.format(
@@ -319,7 +320,7 @@ public class Music extends AbstractCommand {
             }
 
             MusicLinkRepository musicLinkRepository = new MusicLinkRepositoryImpl();
-            if (musicLinkRepository.removeMusicLink(entities.get(0)) == 0) {
+            if (!musicLinkRepository.removeMusicLink(entities.get(0))) {
                 return resources.getString("message.command.music.remove.track_not_found");
             } else {
                 return MessageFormat.format(

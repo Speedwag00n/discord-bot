@@ -10,6 +10,7 @@ import org.hibernate.Transaction;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.criteria.Root;
 
@@ -30,18 +31,39 @@ public class AliasRepositoryImpl implements AliasRepository {
     }
 
     @Override
-    public int removeAlias(AliasEntity entity) {
+    public boolean removeAlias(AliasEntity entity) {
         Session session = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
 
-        Query query = session.createQuery("DELETE AliasEntity WHERE name = :paramName and guildId = :paramGuildId");
-        query.setParameter("paramName", entity.getName());
-        query.setParameter("paramGuildId", entity.getGuildId());
+        Query query = session.createQuery("DELETE AliasEntity WHERE id = :paramId");
+        query.setParameter("paramId", entity.getId());
 
         try {
             int deleted = query.executeUpdate();
             transaction.commit();
-            return deleted;
+            return deleted != 0;
+        } catch (Exception e) {
+            transaction.rollback();
+            throw e;
+        }
+    }
+
+    @Override
+    public long removeAliases(Specification<AliasEntity> specification) {
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaDelete<AliasEntity> delete = builder.createCriteriaDelete(specification.getType());
+
+        Root<AliasEntity> root = delete.from(specification.getType());
+        delete.where(specification.getPredicate(builder, root));
+
+        TypedQuery<Long> query = session.createQuery(delete);
+        try {
+            long result = query.executeUpdate();
+            transaction.commit();
+            return result;
         } catch (Exception e) {
             transaction.rollback();
             throw e;

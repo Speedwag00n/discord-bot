@@ -128,12 +128,13 @@ public class Playlist extends AbstractCommand {
 
             String name = arguments.get(1).getArgument();
 
-            PlaylistEntity entity = new PlaylistEntity();
-            entity.setName(name);
-            entity.setGuildId(event.getGuild().getIdLong());
-
             PlaylistRepository repository = new PlaylistRepositoryImpl();
-            if (repository.removePlaylist(entity) == 0) {
+            if (repository.removePlaylists(
+                    new AndSpecification<>(
+                            new PlaylistSpecificationByName(name),
+                            new PlaylistSpecificationByGuildId(event.getGuild().getIdLong())
+                    )
+            ) == 0) {
                 return resources.getString("message.command.playlist.not_found");
             } else {
                 return MessageFormat.format(

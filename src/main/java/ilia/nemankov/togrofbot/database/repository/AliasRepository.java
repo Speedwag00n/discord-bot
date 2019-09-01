@@ -6,7 +6,10 @@ import ilia.nemankov.togrofbot.database.specification.Specification;
 public interface AliasRepository extends Repository<AliasEntity> {
 
     void addAlias(AliasEntity entity);
-    int removeAlias(AliasEntity entity);
+
+    boolean removeAlias(AliasEntity entity);
+    long removeAliases(Specification<AliasEntity> specification);
+
     int updateAliasName(Specification specification, String name);
 
 }
