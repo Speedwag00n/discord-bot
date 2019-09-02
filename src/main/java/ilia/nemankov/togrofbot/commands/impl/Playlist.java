@@ -260,7 +260,7 @@ public class Playlist extends AbstractCommand {
             info.setCommunicationChannel(event.getMessage().getTextChannel());
             info.setLinks(links);
 
-            String result = VoiceUtils.playMusic(info, false);
+            String result = VoiceUtils.playMusic(info, true);
             VoiceUtils.setPlayingPlaylist(event.getGuild(), playlist);
             return result;
         }
@@ -323,7 +323,7 @@ public class Playlist extends AbstractCommand {
             info.setCommunicationChannel(event.getMessage().getTextChannel());
             info.setLinks(links);
 
-            String result = VoiceUtils.playMusic(info, false);
+            String result = VoiceUtils.playMusic(info, true);
             VoiceUtils.setPlayingPlaylist(event.getGuild(), playlist);
             return result;
         }

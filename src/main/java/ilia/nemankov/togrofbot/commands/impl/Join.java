@@ -47,6 +47,7 @@ public class Join extends AbstractCommand {
 
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
             AudioLoaderInfo info = new AudioLoaderInfo();
 
             info.setVoiceChannel(event.getMember().getVoiceState().getChannel());
@@ -55,7 +56,11 @@ public class Join extends AbstractCommand {
             info.addLink("https://vimeo.com/354064901");
 
             String result = VoiceUtils.playEmotion(info);
-            return result;
+            if (result == null) {
+                return resources.getString("message.command.join.greeting");
+            } else {
+                return result;
+            }
         }
     }
 
