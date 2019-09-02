@@ -1,16 +1,14 @@
 package ilia.nemankov.togrofbot.settings;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
 import java.util.Properties;
 
+@Slf4j
 public class SettingsProvider {
-
-    private static final Logger logger = LoggerFactory.getLogger(SettingsProvider.class);
 
     private static SettingsProvider instance;
 
@@ -24,16 +22,16 @@ public class SettingsProvider {
 
             properties.load(inputStream);
         } catch (NullPointerException e) {
-            logger.error("File settings.properties not found", e);
+            log.error("File settings.properties not found", e);
         } catch (IOException e) {
-            logger.error("Appeared an error during reading settings.properties file", e);
+            log.error("Appeared an error during reading settings.properties file", e);
         }
 
     }
 
     public static SettingsProvider getInstance() {
         if (instance == null){
-            logger.debug("Created {} class instance", SettingsProvider.class.getSimpleName());
+            log.debug("Created {} class instance", SettingsProvider.class.getSimpleName());
             instance = new SettingsProvider();
         }
         return instance;
@@ -61,7 +59,7 @@ public class SettingsProvider {
             try {
                 return Integer.valueOf(properties.getProperty("pagination.default_page_size"));
             } catch (NumberFormatException e) {
-                logger.error("Page size isn't integer", e);
+                log.error("Page size isn't integer", e);
             }
         }
         return 10;

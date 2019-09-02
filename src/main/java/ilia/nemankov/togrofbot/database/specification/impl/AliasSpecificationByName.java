@@ -9,18 +9,18 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 @AllArgsConstructor
-public class AliasSpecificationByGuildId extends AbstractSpecification<AliasEntity> {
+public class AliasSpecificationByName extends AbstractSpecification<AliasEntity> {
 
-    private Long guildId;
+    private String name;
 
     @Override
     public boolean isSatisfiedBy(AliasEntity entity) {
-        return entity.getGuildId() == guildId.longValue();
+        return entity.getName().equals(name);
     }
 
     @Override
     public Predicate getPredicate(CriteriaBuilder builder, Root<AliasEntity> root) {
-        return builder.equal(root.get("guildId"), guildId);
+        return builder.and(builder.equal(root.<String>get("name"), name));
     }
 
 }

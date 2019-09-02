@@ -4,17 +4,15 @@ import ilia.nemankov.togrofbot.database.entity.AliasEntity;
 import ilia.nemankov.togrofbot.database.entity.MusicLinkEntity;
 import ilia.nemankov.togrofbot.database.entity.PlaylistEntity;
 import ilia.nemankov.togrofbot.database.repository.QuerySettings;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.persistence.TypedQuery;
 
+@Slf4j
 public class HibernateUtils {
-
-    private static final Logger logger = LoggerFactory.getLogger(HibernateUtils.class);
 
     private static SessionFactory instance;
 
@@ -29,17 +27,17 @@ public class HibernateUtils {
 
                 final String JDBC_DATABASE_URL = System.getenv("JDBC_DATABASE_URL");
                 if (JDBC_DATABASE_URL == null) {
-                    logger.error("Can not find system variable for JDBC database URL");
+                    log.error("Can not find system variable for JDBC database URL");
                     System.exit(0);
                 }
                 final String JDBC_DATABASE_USERNAME = System.getenv("JDBC_DATABASE_USERNAME");
                 if (JDBC_DATABASE_URL == null) {
-                    logger.error("Can not find system variable for JDBC database username");
+                    log.error("Can not find system variable for JDBC database username");
                     System.exit(0);
                 }
                 final String JDBC_DATABASE_PASSWORD = System.getenv("JDBC_DATABASE_PASSWORD");
                 if (JDBC_DATABASE_URL == null) {
-                    logger.error("Can not find system variable for JDBC database password");
+                    log.error("Can not find system variable for JDBC database password");
                     System.exit(0);
                 }
 
@@ -49,9 +47,9 @@ public class HibernateUtils {
                         .applySetting("hibernate.connection.username", JDBC_DATABASE_USERNAME)
                         .applySetting("hibernate.connection.password", JDBC_DATABASE_PASSWORD);
                 instance = configuration.buildSessionFactory(builder.build());
-                logger.debug("Created {} class instance", SessionFactory.class.getSimpleName());
+                log.debug("Created {} class instance", SessionFactory.class.getSimpleName());
             } catch (Exception e) {
-                logger.debug("Failed to create {}", SessionFactory.class.getSimpleName(), e);
+                log.debug("Failed to create {}", SessionFactory.class.getSimpleName(), e);
             }
         }
         return instance;

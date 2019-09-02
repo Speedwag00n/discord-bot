@@ -1,19 +1,13 @@
 package ilia.nemankov.togrofbot.database.repository;
 
 import ilia.nemankov.togrofbot.database.entity.MusicLinkEntity;
-import ilia.nemankov.togrofbot.database.specification.HibernateSpecification;
+import ilia.nemankov.togrofbot.database.specification.Specification;
 
-import java.util.List;
-
-public interface MusicLinkRepository {
+public interface MusicLinkRepository extends Repository<MusicLinkEntity> {
 
     void addMusicLink(MusicLinkEntity entity);
-    int removeMusicLink(MusicLinkEntity entity);
 
-    long count(HibernateSpecification specification);
-    long count(HibernateSpecification specification, QuerySettings settings);
-
-    List<MusicLinkEntity> query(HibernateSpecification specification);
-    List<MusicLinkEntity> query(HibernateSpecification specification, QuerySettings settings);
+    boolean removeMusicLink(MusicLinkEntity entity);
+    long removeMusicLinks(Specification<MusicLinkEntity> specification);
 
 }

@@ -10,18 +10,16 @@ import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import ilia.nemankov.togrofbot.audio.GuildMusicManagerProvider;
 import ilia.nemankov.togrofbot.database.entity.VideoInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class LinkUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(LinkUtils.class);
-
     public static VideoInfo parseLink(String link) {
-        logger.debug("Started parse link {}", link);
+        log.debug("Started parse link {}", link);
         DefaultAudioPlayerManager playerManager = (DefaultAudioPlayerManager) GuildMusicManagerProvider.getInstance().getPlayerManager();
 
         List<AudioSourceManager> sourceManagers = new ArrayList<>();
@@ -35,19 +33,19 @@ public class LinkUtils {
                     AudioTrack track = (AudioTrack)item;
 
                     if (track.getIdentifier() != null && track.getInfo().title != null) {
-                        logger.debug("Found video with identifier {} in source {}", track.getIdentifier(), track.getInfo());
+                        log.debug("Found video with identifier {} in source {}", track.getIdentifier(), track.getInfo());
                         return new VideoInfo(track.getIdentifier(), sourceManager.getSourceName(), track.getInfo().title);
                     } else {
-                        logger.warn("Identifier {} or title {} is empty", track.getIdentifier(), track.getInfo());
+                        log.warn("Identifier {} or title {} is empty", track.getIdentifier(), track.getInfo());
                     }
                 } else {
-                    logger.debug("Loaded item isn't an AudioTrack instance");
+                    log.debug("Loaded item isn't an AudioTrack instance");
                 }
             } catch (FriendlyException e) {
-                logger.debug("Can't find video in source {}", sourceManager.getSourceName());
+                log.debug("Can't find video in source {}", sourceManager.getSourceName());
             }
         }
-        logger.debug("Video for link {} not found", link);
+        log.debug("Video for link {} not found", link);
         return null;
     }
 
@@ -66,14 +64,14 @@ public class LinkUtils {
                         new AudioReference(videoInfo.getIdentifier(), null));
                 break;
                 default:
-                    logger.warn("Unknown source for video");
+                    log.warn("Unknown source for video");
                     return null;
         }
         if (item != null && item instanceof AudioTrack) {
-            logger.debug("AudioTrack object built");
+            log.debug("AudioTrack object built");
             return (AudioTrack)item;
         } else {
-            logger.debug("Could not build AudioTrack object");
+            log.debug("Could not build AudioTrack object");
             return null;
         }
     }
@@ -88,10 +86,10 @@ public class LinkUtils {
                 link = videoInfo.getIdentifier();
                 break;
                 default:
-                    logger.error("Unknown source for video");
+                    log.error("Unknown source for video");
                     return null;
         }
-        logger.debug("Built link {}", link);
+        log.debug("Built link {}", link);
         return link;
     }
 

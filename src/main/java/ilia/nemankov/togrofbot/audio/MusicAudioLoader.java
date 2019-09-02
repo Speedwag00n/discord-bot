@@ -4,29 +4,25 @@ import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
-public class MusicAudioLoader implements AudioLoadResultHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(MusicAudioLoader.class);
-
-    private CommunicationScheduler scheduler;
+@Slf4j
+public class MusicAudioLoader extends AbstractAudioLoader implements AudioLoadResultHandler {
 
     public MusicAudioLoader(CommunicationScheduler scheduler) {
-        this.scheduler = scheduler;
+        super(scheduler);
     }
 
     @Override
     public void trackLoaded(AudioTrack track) {
-        scheduler.queue(track);
-        logger.debug("Loaded \"{}\"", track.getIdentifier());
+        getScheduler().queue(track);
+        log.debug("Loaded \"{}\"", track.getIdentifier());
     }
 
     @Override
     public void playlistLoaded(AudioPlaylist playlist) {
         for (AudioTrack track : playlist.getTracks()) {
-            scheduler.queue(track);
+            getScheduler().queue(track);
         }
     }
 
@@ -37,7 +33,7 @@ public class MusicAudioLoader implements AudioLoadResultHandler {
 
     @Override
     public void loadFailed(FriendlyException throwable) {
-        logger.debug("Failed to load track", throwable);
+        log.debug("Failed to load track", throwable);
     }
 
 }

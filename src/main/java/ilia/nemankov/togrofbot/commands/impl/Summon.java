@@ -9,8 +9,6 @@ import ilia.nemankov.togrofbot.util.MessageUtils;
 import net.dv8tion.jda.core.entities.GuildVoiceState;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -18,8 +16,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class Summon extends AbstractCommand {
-
-    private static final Logger logger = LoggerFactory.getLogger(Summon.class);
 
     private static final String[] variants = new String[] {"summon", "sum"};
 

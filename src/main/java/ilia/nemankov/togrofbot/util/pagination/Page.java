@@ -14,9 +14,9 @@ public class Page {
 
     private Header header;
     private Footer footer;
-    private List<Row> rows;
+    private List<? extends Row> rows;
 
-    public Page(Header header, List<Row> rows, Footer footer) {
+    public Page(Header header, List<? extends Row> rows, Footer footer) {
         this.header = header;
         this.rows = rows;
         this.footer = footer;

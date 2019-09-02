@@ -1,15 +1,30 @@
 package ilia.nemankov.togrofbot.database.entity;
 
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import javax.annotation.concurrent.Immutable;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
+@NamedEntityGraph(
+    name = "music-link-entity",
+    attributeNodes = {
+        @NamedAttributeNode("identifier"),
+        @NamedAttributeNode("source"),
+        @NamedAttributeNode("title"),
+        @NamedAttributeNode("creationDatetime")
+    }
+)
 @Entity
 @Table(name = "music_link")
-@Data
+@Immutable
+@Getter
+@Setter
+@EqualsAndHashCode(exclude = {"playlist"})
 @NoArgsConstructor
 public class MusicLinkEntity implements Serializable {
 
@@ -32,6 +47,7 @@ public class MusicLinkEntity implements Serializable {
     private String title;
 
     @Column(name = "creation_datetime")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date creationDatetime;
 
 }

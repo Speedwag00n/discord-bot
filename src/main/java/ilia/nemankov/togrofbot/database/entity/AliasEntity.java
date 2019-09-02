@@ -1,14 +1,27 @@
 package ilia.nemankov.togrofbot.database.entity;
 
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.Date;
 
+@NamedEntityGraph(
+   name = "alias-entity",
+   attributeNodes = {
+       @NamedAttributeNode("id"),
+       @NamedAttributeNode("name"),
+       @NamedAttributeNode("guildId"),
+       @NamedAttributeNode("command")
+   }
+)
 @Entity
 @Table(name = "alias")
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
 @NoArgsConstructor
 public class AliasEntity {
 
@@ -25,5 +38,9 @@ public class AliasEntity {
 
     @Column(name = "command")
     private String command;
+
+    @Column(name = "creation_datetime")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date creationDatetime;
 
 }

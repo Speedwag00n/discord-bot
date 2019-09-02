@@ -1,8 +1,6 @@
 package ilia.nemankov.togrofbot.commands.impl;
 
-import ilia.nemankov.togrofbot.audio.GuildMusicManager;
-import ilia.nemankov.togrofbot.audio.GuildMusicManagerProvider;
-import ilia.nemankov.togrofbot.audio.MusicAudioLoader;
+import ilia.nemankov.togrofbot.audio.AudioLoaderInfo;
 import ilia.nemankov.togrofbot.commands.AbstractCommand;
 import ilia.nemankov.togrofbot.commands.CommandItem;
 import ilia.nemankov.togrofbot.commands.parsing.CommandVariantDescription;
@@ -19,35 +17,30 @@ import ilia.nemankov.togrofbot.database.repository.PlaylistRepository;
 import ilia.nemankov.togrofbot.database.repository.QuerySettings;
 import ilia.nemankov.togrofbot.database.repository.impl.MusicLinkRepositoryImpl;
 import ilia.nemankov.togrofbot.database.repository.impl.PlaylistRepositoryImpl;
-import ilia.nemankov.togrofbot.database.specification.HibernateSpecification;
 import ilia.nemankov.togrofbot.database.specification.impl.MusicLinkSpecificationByPlaylist;
 import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByGuildId;
-import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByNameAndGuildId;
+import ilia.nemankov.togrofbot.database.specification.impl.PlaylistSpecificationByName;
+import ilia.nemankov.togrofbot.database.specification.impl.composite.AndSpecification;
 import ilia.nemankov.togrofbot.settings.SettingsProvider;
-import ilia.nemankov.togrofbot.util.HibernateUtils;
 import ilia.nemankov.togrofbot.util.LinkUtils;
-import ilia.nemankov.togrofbot.util.pagination.PageNotFoundException;
+import ilia.nemankov.togrofbot.util.VoiceUtils;
 import ilia.nemankov.togrofbot.util.pagination.PaginationUtils;
 import ilia.nemankov.togrofbot.util.pagination.header.impl.DefaultHeader;
 import ilia.nemankov.togrofbot.util.pagination.row.Row;
 import ilia.nemankov.togrofbot.util.pagination.row.impl.MarkedRow;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.VoiceChannel;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.core.managers.AudioManager;
 import org.hibernate.exception.ConstraintViolationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class Playlist extends AbstractCommand {
-
-    private static final Logger logger = LoggerFactory.getLogger(Playlist.class);
 
     private static final String[] variants = new String[] {"playlist", "pl"};
 
@@ -87,13 +80,13 @@ public class Playlist extends AbstractCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-
             String name = arguments.get(1).getArgument();
 
             try {
                 PlaylistEntity entity = new PlaylistEntity();
                 entity.setName(name);
                 entity.setGuildId(event.getGuild().getIdLong());
+                entity.setCreationDatetime(new Date());
 
                 PlaylistRepository repository = new PlaylistRepositoryImpl();
                 repository.addPlaylist(entity);
@@ -106,7 +99,7 @@ public class Playlist extends AbstractCommand {
                 if (e instanceof ConstraintViolationException) {
                     return resources.getString("message.command.playlist.create.exists");
                 } else {
-                    logger.error("Failed to create playlist", e);
+                    log.error("Failed to create playlist", e);
                     return resources.getString("message.command.playlist.create.failed");
                 }
             }
@@ -135,12 +128,13 @@ public class Playlist extends AbstractCommand {
 
             String name = arguments.get(1).getArgument();
 
-            PlaylistEntity entity = new PlaylistEntity();
-            entity.setName(name);
-            entity.setGuildId(event.getGuild().getIdLong());
-
             PlaylistRepository repository = new PlaylistRepositoryImpl();
-            if (repository.removePlaylist(entity) == 0) {
+            if (repository.removePlaylists(
+                    new AndSpecification<>(
+                            new PlaylistSpecificationByName(name),
+                            new PlaylistSpecificationByGuildId(event.getGuild().getIdLong())
+                    )
+            ) == 0) {
                 return resources.getString("message.command.playlist.not_found");
             } else {
                 return MessageFormat.format(
@@ -171,26 +165,16 @@ public class Playlist extends AbstractCommand {
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
-            PlaylistRepository repository = new PlaylistRepositoryImpl();
-            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
-            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByGuildId(event.getGuild().getIdLong()));
-            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
-            List<Row> playlists = entities
-                    .parallelStream()
-                    .map(entity -> new MarkedRow(entity.getName()))
-                    .collect(Collectors.toList());
-            if (playlists.isEmpty()) {
+            int itemsOnPage = SettingsProvider.getInstance().getDefaultPageSize();
+            int maxPageNumber = getMaxPageNumber(event.getGuild().getIdLong(), itemsOnPage);
+            if (maxPageNumber == 0) {
                 return resources.getString("message.command.playlist.show.empty");
             }
-            try {
-                return PaginationUtils.buildPage(1, new DefaultHeader(), playlists, null).toString();
-            } catch (PageNotFoundException e) {
-                logger.error("Error caused by building first page for command {}", this.getClass().getSimpleName(), e);
-                return MessageFormat.format(
-                        resources.getString("message.command.playlist.show.failed"),
-                        1
-                );
-            }
+
+            List<PlaylistEntity> entities = getPlaylistsFromDB(1, itemsOnPage, event.getGuild().getIdLong());
+            List<Row> playlists = mapEntitiesToRows(entities);
+
+            return PaginationUtils.buildPage(new DefaultHeader(1, maxPageNumber), playlists, null).toString();
         }
     }
 
@@ -213,27 +197,24 @@ public class Playlist extends AbstractCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            int page = ((NumberArgument)arguments.get(1)).getNumberArgument().intValue();
 
-            PlaylistRepository repository = new PlaylistRepositoryImpl();
-            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
-            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByGuildId(event.getGuild().getIdLong()));
-            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
-            List<Row> playlists = entities
-                    .parallelStream()
-                    .map(entity -> new MarkedRow(entity.getName()))
-                    .collect(Collectors.toList());
-            if (playlists.isEmpty()) {
+            int itemsOnPage = SettingsProvider.getInstance().getDefaultPageSize();
+            int maxPageNumber = getMaxPageNumber(event.getGuild().getIdLong(), itemsOnPage);
+            if (maxPageNumber == 0) {
                 return resources.getString("message.command.playlist.show.empty");
             }
-            int page = ((NumberArgument)arguments.get(1)).getNumberArgument().intValue();
-            try {
-                return PaginationUtils.buildPage(page, new DefaultHeader(), playlists, null).toString();
-            } catch (PageNotFoundException e) {
+            if (maxPageNumber < page || page <= 0) {
                 return MessageFormat.format(
                         resources.getString("message.pagination.page.not_found"),
                         page
                 );
             }
+
+            List<PlaylistEntity> entities = getPlaylistsFromDB(page, itemsOnPage, event.getGuild().getIdLong());
+            List<Row> playlists = mapEntitiesToRows(entities);
+
+            return PaginationUtils.buildPage(new DefaultHeader(page, maxPageNumber), playlists, null).toString();
         }
     }
 
@@ -256,52 +237,32 @@ public class Playlist extends AbstractCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-
-            VoiceChannel channel = event.getMember().getVoiceState().getChannel();
             String playlist = arguments.get(1).getArgument();
+
             PlaylistRepository repository = new PlaylistRepositoryImpl();
-            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
-            List<PlaylistEntity> playlistEntities = repository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
-            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
+            List<PlaylistEntity> playlistEntities = repository.query(
+                    new AndSpecification<>(
+                            new PlaylistSpecificationByName(playlist),
+                            new PlaylistSpecificationByGuildId(event.getGuild().getIdLong())
+                    ),
+                    "playlist-entity.with-links");
             if (playlistEntities.isEmpty()) {
                 return resources.getString("message.command.playlist.not_found");
             }
             List<MusicLinkEntity> musicLinkEntities = playlistEntities.get(0).getLinks();
 
-            if (channel == null) {
-                return resources.getString("error.connection.no_chosen_voice_channel");
-            } else if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.VOICE_CONNECT)) {
-                return resources.getString("error.permissions.join_voice_channel");
-            } else {
-                AudioManager audioManager = event.getGuild().getAudioManager();
-                if (audioManager.isAttemptingToConnect()) {
-                    return resources.getString("error.connection.try_to_connect");
-                } else {
-                    if (musicLinkEntities.isEmpty()) {
-                        return resources.getString("message.command.playlist.play.nothing");
-                    }
-                    GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
-                    GuildMusicManager musicManager = provider.getGuildMusicManager(event.getGuild());
+            List<String> links = buildLinks(musicLinkEntities);
 
-                    musicManager.getAudioPlayer().stopTrack();
-                    musicManager.getTrackScheduler().clearAll();
+            AudioLoaderInfo info = new AudioLoaderInfo();
 
-                    audioManager.openAudioConnection(channel);
+            info.setVoiceChannel(event.getMember().getVoiceState().getChannel());
+            info.setGuild(event.getGuild());
+            info.setCommunicationChannel(event.getMessage().getTextChannel());
+            info.setLinks(links);
 
-                    musicManager.getTrackScheduler().setPlaylist(playlist);
-
-                    musicManager.getTrackScheduler().setCommunicationChannel(event.getChannel());
-                    for (MusicLinkEntity musicLinkEntity : musicLinkEntities) {
-                        VideoInfo info = new VideoInfo(musicLinkEntity.getIdentifier(), musicLinkEntity.getSource(), musicLinkEntity.getTitle());
-                        String link;
-                        if ((link = LinkUtils.buildLink(info)) != null) {
-                            provider.getPlayerManager().loadItem(link, new MusicAudioLoader(musicManager.getTrackScheduler()));
-                        }
-                    }
-
-                    return null;
-                }
-            }
+            String result = VoiceUtils.playMusic(info, false);
+            VoiceUtils.setPlayingPlaylist(event.getGuild(), playlist);
+            return result;
         }
     }
 
@@ -324,58 +285,47 @@ public class Playlist extends AbstractCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-
-            VoiceChannel channel = event.getMember().getVoiceState().getChannel();
             String playlist = arguments.get(1).getArgument();
+            int fromTrack = ((NumberArgument)arguments.get(2)).getNumberArgument().intValue();
+
             PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
-            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
-            List<PlaylistEntity> playlistEntities = playlistRepository.query(new PlaylistSpecificationByNameAndGuildId(playlist, event.getGuild().getIdLong()));
-            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
+            List<PlaylistEntity> playlistEntities = playlistRepository.query(
+                    new AndSpecification<>(
+                            new PlaylistSpecificationByName(playlist),
+                            new PlaylistSpecificationByGuildId(event.getGuild().getIdLong())
+                    ),
+                    "playlist-entity.without-links");
             if (playlistEntities.isEmpty()) {
                 return resources.getString("message.command.playlist.not_found");
             }
 
             MusicLinkRepository musicLinkRepository = new MusicLinkRepositoryImpl();
 
-            int fromTrack = ((NumberArgument)arguments.get(2)).getNumberArgument().intValue();
+            long tracksCount = musicLinkRepository.count(new MusicLinkSpecificationByPlaylist(playlistEntities.get(0)));
+
+            if (fromTrack <= 0 || tracksCount < fromTrack) {
+                return MessageFormat.format(
+                        resources.getString("message.command.playlist.play.incorrect_index"),
+                        playlist
+                );
+            }
+
             QuerySettings querySettings = new QuerySettings();
             querySettings.setFirstResult(fromTrack);
-            List<MusicLinkEntity> musicLinkEntities = musicLinkRepository.query(new MusicLinkSpecificationByPlaylist(playlistEntities.get(0)));
+            List<MusicLinkEntity> musicLinkEntities = musicLinkRepository.query(new MusicLinkSpecificationByPlaylist(playlistEntities.get(0)), "music-link-entity");
 
-            if (channel == null) {
-                return resources.getString("error.connection.no_chosen_voice_channel");
-            } else if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.VOICE_CONNECT)) {
-                return resources.getString("error.permissions.join_voice_channel");
-            } else {
-                AudioManager audioManager = event.getGuild().getAudioManager();
-                if (audioManager.isAttemptingToConnect()) {
-                    return resources.getString("error.connection.try_to_connect");
-                } else {
-                    if (musicLinkEntities.isEmpty()) {
-                        return resources.getString("message.command.playlist.play.nothing");
-                    }
-                    GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
-                    GuildMusicManager musicManager = provider.getGuildMusicManager(event.getGuild());
+            List<String> links = buildLinks(musicLinkEntities);
 
-                    musicManager.getAudioPlayer().stopTrack();
-                    musicManager.getTrackScheduler().clearAll();
+            AudioLoaderInfo info = new AudioLoaderInfo();
 
-                    audioManager.openAudioConnection(channel);
+            info.setVoiceChannel(event.getMember().getVoiceState().getChannel());
+            info.setGuild(event.getGuild());
+            info.setCommunicationChannel(event.getMessage().getTextChannel());
+            info.setLinks(links);
 
-                    musicManager.getTrackScheduler().setPlaylist(playlist);
-
-                    musicManager.getTrackScheduler().setCommunicationChannel(event.getChannel());
-                    for (MusicLinkEntity musicLinkEntity : musicLinkEntities) {
-                        VideoInfo info = new VideoInfo(musicLinkEntity.getIdentifier(), musicLinkEntity.getSource(), musicLinkEntity.getTitle());
-                        String link;
-                        if ((link = LinkUtils.buildLink(info)) != null) {
-                            provider.getPlayerManager().loadItem(link, new MusicAudioLoader(musicManager.getTrackScheduler()));
-                        }
-                    }
-
-                    return null;
-                }
-            }
+            String result = VoiceUtils.playMusic(info, false);
+            VoiceUtils.setPlayingPlaylist(event.getGuild(), playlist);
+            return result;
         }
     }
 
@@ -398,34 +348,77 @@ public class Playlist extends AbstractCommand {
         @Override
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
-
             String oldName = arguments.get(1).getArgument();
             String newName = arguments.get(2).getArgument();
 
             PlaylistRepository repository = new PlaylistRepositoryImpl();
-            HibernateUtils.getSessionFactory().getCurrentSession().beginTransaction();
-            List<PlaylistEntity> entities = repository.query(new PlaylistSpecificationByNameAndGuildId(oldName, event.getGuild().getIdLong()));
-            HibernateUtils.getSessionFactory().getCurrentSession().getTransaction().commit();
+            List<PlaylistEntity> entities = repository.query(
+                    new AndSpecification<>(
+                            new PlaylistSpecificationByName(oldName),
+                            new PlaylistSpecificationByGuildId(event.getGuild().getIdLong())
+                    ),
+                    "playlist-entity.without-links"
+            );
             if (entities.isEmpty()) {
                 return resources.getString("message.command.playlist.update.not_found");
             }
-
-            PlaylistEntity entity = entities.get(0);
-            entity.setName(newName);
+            PlaylistEntity updatingPlaylist = entities.get(0);
+            updatingPlaylist.setName(newName);
 
             try {
-                repository.updatePlaylist(entity);
+                repository.updatePlaylist(updatingPlaylist);
+                return resources.getString("message.command.playlist.update.successful");
             } catch (Throwable e) {
                 if (e.getCause() instanceof ConstraintViolationException) {
                     return resources.getString("message.command.playlist.update.exists");
                 } else {
-                    logger.error("Failed to update playlist", e);
+                    log.error("Failed to update playlist", e);
                     return resources.getString("message.command.playlist.update.failed");
                 }
             }
-
-            return resources.getString("message.command.playlist.update.successful");
         }
+    }
+
+    private int getMaxPageNumber(long guildId, int itemsOnPage) {
+        if (guildId < 0 || itemsOnPage <= 0) {
+            throw new IllegalArgumentException();
+        }
+        PlaylistRepository repository = new PlaylistRepositoryImpl();
+
+        return PaginationUtils.maxPage(itemsOnPage, repository.count(new PlaylistSpecificationByGuildId(guildId)));
+    }
+
+    private List<PlaylistEntity> getPlaylistsFromDB(int page, int itemsOnPage, long guildId) {
+        if (page <= 0 || itemsOnPage <= 0 || guildId < 0) {
+            log.error("Received invalid args: page={}, itemsOnPage={}, guildId={}", page, itemsOnPage, guildId);
+            throw new IllegalArgumentException();
+        }
+        PlaylistRepository repository = new PlaylistRepositoryImpl();
+
+        QuerySettings querySettings = new QuerySettings();
+        querySettings.setFirstResult((page - 1) * itemsOnPage);
+        querySettings.setMaxResult(itemsOnPage);
+
+        return repository.query(new PlaylistSpecificationByGuildId(guildId), "playlist-entity.without-links", querySettings);
+    }
+
+    private List<Row> mapEntitiesToRows(List<PlaylistEntity> entities) {
+        return entities
+                .parallelStream()
+                .map(entity -> new MarkedRow(entity.getName()))
+                .collect(Collectors.toList());
+    }
+
+    private List<String> buildLinks(List<MusicLinkEntity> entities) {
+        List<String> links = new ArrayList<>();
+        for (MusicLinkEntity musicLinkEntity : entities) {
+            VideoInfo info = new VideoInfo(musicLinkEntity.getIdentifier(), musicLinkEntity.getSource(), musicLinkEntity.getTitle());
+            String link;
+            if ((link = LinkUtils.buildLink(info)) != null) {
+                links.add(link);
+            }
+        }
+        return links;
     }
 
 }
