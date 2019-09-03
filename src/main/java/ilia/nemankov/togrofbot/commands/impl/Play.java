@@ -57,7 +57,7 @@ public class Play extends AbstractCommand {
             info.setCommunicationChannel(event.getMessage().getTextChannel());
             info.addLink(link);
 
-            return VoiceUtils.playMusic(info, false);
+            return VoiceUtils.playMusic(info, true);
         }
     }
 

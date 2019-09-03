@@ -19,15 +19,15 @@ public class VoiceUtils {
 
     }
 
-    public static String playMusic(AudioLoaderInfo info, boolean append) {
-        return playAudio(info, append, AudioType.MUSIC);
+    public static String playMusic(AudioLoaderInfo info, boolean clear) {
+        return playAudio(info, clear, AudioType.MUSIC);
     }
 
     public static String playEmotion(AudioLoaderInfo info) {
         return playAudio(info, false, AudioType.EMOTION);
     }
 
-    private static String playAudio(AudioLoaderInfo info, boolean append, AudioType type) {
+    private static String playAudio(AudioLoaderInfo info, boolean clear, AudioType type) {
         ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
 
         Guild guild = info.getGuild();
@@ -48,7 +48,7 @@ public class VoiceUtils {
         GuildMusicManagerProvider provider = GuildMusicManagerProvider.getInstance();
         GuildMusicManager musicManager = provider.getGuildMusicManager(guild);
 
-        if (!append) {
+        if (clear) {
             musicManager.getAudioPlayer().stopTrack();
             musicManager.getTrackScheduler().clearAll();
         }
