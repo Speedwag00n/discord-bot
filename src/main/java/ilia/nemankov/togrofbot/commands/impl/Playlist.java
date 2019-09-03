@@ -286,7 +286,7 @@ public class Playlist extends AbstractCommand {
         public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
             ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
             String playlist = arguments.get(1).getArgument();
-            int fromTrack = ((NumberArgument)arguments.get(2)).getNumberArgument().intValue();
+            int fromTrack = ((NumberArgument)arguments.get(2)).getNumberArgument().intValue() - 1;
 
             PlaylistRepository playlistRepository = new PlaylistRepositoryImpl();
             List<PlaylistEntity> playlistEntities = playlistRepository.query(
@@ -303,7 +303,7 @@ public class Playlist extends AbstractCommand {
 
             long tracksCount = musicLinkRepository.count(new MusicLinkSpecificationByPlaylist(playlistEntities.get(0)));
 
-            if (fromTrack <= 0 || tracksCount < fromTrack) {
+            if (fromTrack < 0 || tracksCount < fromTrack) {
                 return MessageFormat.format(
                         resources.getString("message.command.playlist.play.incorrect_index"),
                         playlist
@@ -312,7 +312,10 @@ public class Playlist extends AbstractCommand {
 
             QuerySettings querySettings = new QuerySettings();
             querySettings.setFirstResult(fromTrack);
-            List<MusicLinkEntity> musicLinkEntities = musicLinkRepository.query(new MusicLinkSpecificationByPlaylist(playlistEntities.get(0)), "music-link-entity");
+            List<MusicLinkEntity> musicLinkEntities = musicLinkRepository.query(
+                    new MusicLinkSpecificationByPlaylist(playlistEntities.get(0)),
+                    "music-link-entity",
+                    querySettings);
 
             List<String> links = buildLinks(musicLinkEntities);
 
