@@ -3,6 +3,7 @@ package ilia.nemankov.togrofbot.util;
 import ilia.nemankov.togrofbot.database.entity.AliasEntity;
 import ilia.nemankov.togrofbot.database.entity.MusicLinkEntity;
 import ilia.nemankov.togrofbot.database.entity.PlaylistEntity;
+import ilia.nemankov.togrofbot.database.entity.PresentationEntity;
 import ilia.nemankov.togrofbot.database.repository.QuerySettings;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.SessionFactory;
@@ -24,6 +25,7 @@ public class HibernateUtils {
                 configuration.addAnnotatedClass(PlaylistEntity.class);
                 configuration.addAnnotatedClass(MusicLinkEntity.class);
                 configuration.addAnnotatedClass(AliasEntity.class);
+                configuration.addAnnotatedClass(PresentationEntity.class);
 
                 final String JDBC_DATABASE_URL = System.getenv("JDBC_DATABASE_URL");
                 if (JDBC_DATABASE_URL == null) {

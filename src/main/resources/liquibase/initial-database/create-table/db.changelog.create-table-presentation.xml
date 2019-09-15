@@ -14,21 +14,30 @@
                 <constraints nullable="false"/>
             </column>
             <column name="title" type="VARCHAR(255)">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
             <column name="identifier" type="VARCHAR(255)">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
             <column name="source" type="VARCHAR(255)">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
-            <column name="duration" type="INT">
+            <column name="duration" type="INT" defaultValue="0">
                 <constraints nullable="false"/>
             </column>
             <column name="is_active" type="BOOLEAN" defaultValue="true">
                 <constraints nullable="false"/>
             </column>
+            <column name="message" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
         </createTable>
+
+        <addUniqueConstraint
+                tableName="presentation"
+                columnNames="guild_id, user_id"
+                constraintName="unique_constraint-presentation-guild_id_user_id"
+        />
     </changeSet>
 
 </databaseChangeLog>

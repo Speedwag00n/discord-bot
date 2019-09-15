@@ -55,10 +55,16 @@ public interface Repository<T> {
 
         Root<T> root = criteria.from(specification.getType());
         criteria.select(root).where(specification.getPredicate(builder, root));
-        criteria.orderBy(builder.asc(root.get("creationDatetime")));
+        try {
+            criteria.orderBy(builder.asc(root.get("creationDatetime")));
+        } catch (IllegalArgumentException e) {
+            //TODO rework orderBy setting
+        }
 
         TypedQuery<T> query = session.createQuery(criteria);
-        query.setHint("javax.persistence.fetchgraph", session.getEntityGraph(graphName));
+        if (graphName != null) {
+            query.setHint("javax.persistence.fetchgraph", session.getEntityGraph(graphName));
+        }
         if (settings != null) {
             HibernateUtils.applySettings(query, settings);
         }

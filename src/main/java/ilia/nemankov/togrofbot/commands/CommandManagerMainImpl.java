@@ -28,6 +28,7 @@ public class CommandManagerMainImpl implements CommandManager {
         addCommand(new Leave());
         addCommand(new Alias());
         addCommand(new Roll());
+        addCommand(new Introduce());
         addCommand(new Lottery());
         addCommand(new Summon());
 

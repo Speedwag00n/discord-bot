@@ -28,7 +28,7 @@ public class DefaultArgument implements NumberArgument, BooleanArgument {
             bool = true;
             log.trace("Argument \"{}\" can be \"true\" boolean value", argument);
         } else if (argument.equals("false") || argument.equals("no") || argument.equals("n")) {
-            bool = true;
+            bool = false;
             log.trace("Argument \"{}\" can be \"false\" boolean value", argument);
         } else {
             log.trace("Argument \"{}\" can not be a boolean", argument);
