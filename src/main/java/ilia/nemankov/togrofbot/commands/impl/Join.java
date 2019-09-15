@@ -52,7 +52,6 @@ public class Join extends AbstractCommand {
 
             info.setVoiceChannel(event.getMember().getVoiceState().getChannel());
             info.setGuild(event.getGuild());
-            info.setCommunicationChannel(event.getMessage().getTextChannel());
             info.addLink("https://vimeo.com/354064901");
 
             String result = VoiceUtils.playEmotion(info);

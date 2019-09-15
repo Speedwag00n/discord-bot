@@ -125,6 +125,8 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
         if (endReason.mayStartNext) {
             log.debug("Ended a track \"{}\". Starting next", track.getIdentifier());
             next();
+        } else {
+            communicationChannel = null;
         }
     }
 
