@@ -22,6 +22,7 @@ import ilia.nemankov.togrofbot.util.LinkUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -42,6 +43,7 @@ public class Introduce extends AbstractCommand {
         commandItems.add(new IntroduceSetActive());
         commandItems.add(new IntroduceSetTrack());
         commandItems.add(new IntroduceSetMessage());
+        commandItems.add(new IntroduceInfo());
         setCommandItems(commandItems);
     }
 
@@ -199,12 +201,59 @@ public class Introduce extends AbstractCommand {
         }
     }
 
+    private class IntroduceInfo extends CommandItem {
+
+        public IntroduceInfo() {
+            super(new ArgumentsTemplate("info"));
+        }
+
+        @Override
+        public CommandVariantDescription getDescription() {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+            CommandVariantDescription description = new CommandVariantDescription(
+                    resources.getString("description.command.introduce.info.args"),
+                    resources.getString("description.command.introduce.info.desc")
+            );
+            return description;
+        }
+
+        @Override
+        public String execute(GuildMessageReceivedEvent event, List<Argument> arguments) {
+            ResourceBundle resources = ResourceBundle.getBundle("lang.lang", SettingsProvider.getInstance().getLocale());
+
+            PresentationEntity entity = getPresentation(event.getGuild().getIdLong(), event.getAuthor().getIdLong());
+            StringBuilder builder = new StringBuilder();
+            builder.append(resources.getString("message.command.introduce.info.header"));
+            builder.append("\n");
+            builder.append(MessageFormat.format(
+                    resources.getString("message.command.introduce.info.track"),
+                    entity.getTitle() == null ? resources.getString("message.command.introduce.info.track.not_specified") : entity.getTitle()
+            ));
+            builder.append("\n");
+            builder.append(MessageFormat.format(
+                    resources.getString("message.command.introduce.info.duration"),
+                    entity.getDuration() == 0 ? resources.getString("message.command.introduce.info.duration.not_specified") : entity.getDuration()
+            ));
+            builder.append("\n");
+            builder.append(MessageFormat.format(
+                    resources.getString("message.command.introduce.info.message"),
+                    entity.getMessage() == null ? resources.getString("message.command.introduce.info.message.not_specified") : entity.getMessage()
+            ));
+            builder.append("\n");
+            builder.append(entity.isActive()
+                    ? resources.getString("message.command.introduce.info.active.enabled")
+                    : resources.getString("message.command.introduce.info.active.disabled")
+            );
+            return builder.toString();
+        }
+    }
+
     private PresentationEntity getPresentation(Long guildId, Long userId) {
         PresentationRepository repository = new PresentationRepositoryImpl();
         List<PresentationEntity> entities = repository.query(
                 new AndSpecification<>(
-                        new PresentationSpecificationByUserId(guildId),
-                        new PresentationSpecificationByGuildId(userId)
+                        new PresentationSpecificationByUserId(userId),
+                        new PresentationSpecificationByGuildId(guildId)
                 ),
                 null
         );
@@ -214,6 +263,7 @@ public class Introduce extends AbstractCommand {
             PresentationEntity entity = new PresentationEntity();
             entity.setGuildId(guildId);
             entity.setUserId(userId);
+            entity.setActive(true);
             return entity;
         }
     }
