@@ -30,7 +30,7 @@ import java.util.ResourceBundle;
 @Slf4j
 public class Introduce extends AbstractCommand {
 
-    private static final String[] variants = new String[] {"introduce", "intr"};
+    private static final String[] variants = new String[] {"introduce", "int"};
 
     @Override
     public String[] getVariants() {

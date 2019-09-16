@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
+import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import javax.security.auth.login.LoginException;
 import java.util.List;
@@ -21,10 +22,12 @@ public class TogrofBot {
             List<Command> commands = commandManager.getCommands();
             CommandHandler commandHandler = CommandHandlerImpl.getInstance();
             commandHandler.initCommands(commands);
+            ListenerAdapter channelConnectListener = new ChannelConnectListener();
 
             JDABuilder builder = new JDABuilder(AccountType.BOT)
                     .setToken(TOKEN)
-                    .addEventListener(commandHandler);
+                    .addEventListener(commandHandler)
+                    .addEventListener(channelConnectListener);
 
             JDA jda = builder.build();
         } catch (LoginException e) {

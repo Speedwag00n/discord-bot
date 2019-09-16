@@ -8,9 +8,14 @@ public class AudioPlayerSendHandler implements AudioSendHandler {
 
     private final AudioPlayer audioPlayer;
     private AudioFrame lastFrame;
+    private long framesLimit;
+    private long sentFramesCount;
+    private LimitedScheduler scheduler;
 
-    public AudioPlayerSendHandler(AudioPlayer audioPlayer) {
+    public AudioPlayerSendHandler(AudioPlayer audioPlayer, LimitedScheduler scheduler) {
         this.audioPlayer = audioPlayer;
+        this.scheduler = scheduler;
+        framesLimit = scheduler.getLimitMillis() / 20;
     }
 
     @Override
@@ -23,6 +28,13 @@ public class AudioPlayerSendHandler implements AudioSendHandler {
 
     @Override
     public byte[] provide20MsAudio() {
+        if (framesLimit != 0) {
+            if (framesLimit == sentFramesCount) {
+                scheduler.next();
+            } else {
+                sentFramesCount++;
+            }
+        }
         if (lastFrame == null) {
             lastFrame = audioPlayer.provide();
         }

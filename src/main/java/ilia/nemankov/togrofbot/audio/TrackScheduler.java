@@ -15,13 +15,14 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Slf4j
-public class TrackScheduler extends AudioEventAdapter implements CommunicationScheduler {
+public class TrackScheduler extends AudioEventAdapter implements CommunicationScheduler, LimitedScheduler {
 
     private final AudioPlayer player;
     private final BlockingQueue<AudioTrack> queue;
     private AudioTrack playingNow;
     private TextChannel communicationChannel;
     private String playlist;
+    private long limit;
 
     public TrackScheduler(AudioPlayer player) {
         this.player = player;
@@ -29,7 +30,8 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
     }
 
     @Override
-    public void queue(AudioTrack track) {
+    public void queue(AudioTrack track, long limit) {
+        this.limit = limit;
         if (!player.startTrack(track, true)) {
             queue.offer(track);
             log.debug("Added a track with identifier \"{}\" to the queue", track.getIdentifier());
@@ -46,6 +48,11 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
             }
             playingNow = track;
         }
+    }
+
+    @Override
+    public void queue(AudioTrack track) {
+        queue(track, 0);
     }
 
     @Override
@@ -136,6 +143,16 @@ public class TrackScheduler extends AudioEventAdapter implements CommunicationSc
 
     public void setPlaylist(String playlist) {
         this.playlist = playlist;
+    }
+
+    @Override
+    public void setLimitMillis(long limit) {
+        this.limit = limit;
+    }
+
+    @Override
+    public long getLimitMillis() {
+        return limit;
     }
 
 }

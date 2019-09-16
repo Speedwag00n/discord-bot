@@ -26,7 +26,7 @@ public class GuildMusicManager implements MusicManager {
 
     @Override
     public AudioPlayerSendHandler getSendHandler() {
-        return new AudioPlayerSendHandler(audioPlayer);
+        return new AudioPlayerSendHandler(audioPlayer, trackScheduler);
     }
 
 }
